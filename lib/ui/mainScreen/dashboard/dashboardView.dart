@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../reusableWidget/chart.dart';
+
 
 class DashboardView extends StatefulWidget {
   const DashboardView({super.key});
@@ -14,7 +16,7 @@ class _DashboardViewState extends State<DashboardView> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          child: Container(),
+          child: CustomBarChart(),
         ),
       ),
     );

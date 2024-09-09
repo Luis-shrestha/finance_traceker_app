@@ -12,6 +12,9 @@ class CustomTextFormField extends StatelessWidget {
   final FormFieldValidator<String?>? validator;
   final bool obscureText;
   final VoidCallback? suffixIconOnPressed;
+  final VoidCallback? onTap;
+  final TextInputType keyboardType;
+
 
   const CustomTextFormField({
     super.key,
@@ -26,6 +29,8 @@ class CustomTextFormField extends StatelessWidget {
     this.readOnly = false,
     this.obscureText = false,
     this.suffixIconOnPressed,
+    this.onTap,
+    this.keyboardType = TextInputType.text,
   });
 
   @override
@@ -36,6 +41,7 @@ class CustomTextFormField extends StatelessWidget {
       style: const TextStyle(
         color: Colors.black,
       ),
+      keyboardType: keyboardType,
       readOnly: readOnly,
       obscureText: obscureText,
       decoration: InputDecoration(
@@ -82,6 +88,7 @@ class CustomTextFormField extends StatelessWidget {
         ),
       ),
       validator: validator,
+      onTap: onTap,
     );
   }
 }

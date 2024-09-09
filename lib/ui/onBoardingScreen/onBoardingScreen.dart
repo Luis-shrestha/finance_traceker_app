@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sales_tracker/floorDatabase/database/database.dart';
 import 'package:sales_tracker/ui/authenticationScreen/loginScreen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
@@ -10,7 +11,8 @@ import 'onBoardingInstance.dart';
 import 'onBoardingList/onBoardingListData.dart';
 
 class OnBoardingScreen extends StatefulWidget {
-  const OnBoardingScreen({super.key});
+  final AppDatabase appDatabase;
+  const OnBoardingScreen({super.key, required this.appDatabase});
 
   @override
   State<OnBoardingScreen> createState() => _OnBoardingScreenState();
@@ -93,7 +95,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                       ),
                       onTap: () {
                         SharedPreferenceManager.setWalkthroughShown(true);
-                        Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginRegisterView()));
+                        Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginRegisterView(appDatabase: widget.appDatabase,)));
                       },
                     ),
                   ),
@@ -116,7 +118,7 @@ class _OnBoardingScreenState extends State<OnBoardingScreen> {
                   onTap: (){
                     if (currentPage == pages.length - 1) {
                       SharedPreferenceManager.setWalkthroughShown(true);
-                      Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginRegisterView()));
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=>LoginRegisterView(appDatabase: widget.appDatabase,)));
                     } else {
                       controller.nextPage(
                         duration: const Duration(milliseconds: 300),

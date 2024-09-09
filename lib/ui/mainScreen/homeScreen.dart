@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:sales_tracker/ui/mainScreen/dashboard/dashboardView.dart';
+import 'package:sales_tracker/ui/mainScreen/income/incomeView.dart';
+import 'package:sales_tracker/ui/mainScreen/income/widget/addIncome.dart';
+
+import '../../floorDatabase/database/database.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final AppDatabase appDatabase;
+  const HomeScreen({super.key, required this.appDatabase});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -10,34 +15,48 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
+
+  // Titles for each tab
+  static const List<String> _titles = [
+    'Dashboard',
+    'Income',
+    'Expenses',
+    'Details',
+  ];
+
   static const TextStyle optionStyle =
   TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-  static const List<Widget> _widgetOptions = <Widget>[
-    DashboardView(),
-    Text(
-      'Income',
-      style: optionStyle,
-    ),
-    Text(
-      'Expenses',
-      style: optionStyle,
-    ),
-    Text(
-      'Details',
-      style: optionStyle,
-    ),
-  ];
+
+  late List<Widget> _widgetOptions;
+
+  @override
+  void initState() {
+    super.initState();
+    _widgetOptions = <Widget>[
+      DashboardView(),
+      IncomeView(appDatabase: widget.appDatabase),
+      Text(
+        'Expenses',
+        style: optionStyle,
+      ),
+      Text(
+        'Details',
+        style: optionStyle,
+      ),
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Finance Tracker"),
+        title: Text(_titles[_selectedIndex]), // Update title based on selected index
         centerTitle: true,
         leading: Builder(
           builder: (context) {
@@ -64,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Text('Finance Tracker App'),
             ),
             ListTile(
-              title: const Text('DashBoard'),
+              title: const Text('Dashboard'),
               selected: _selectedIndex == 0,
               onTap: () {
                 _onItemTapped(0);
@@ -89,9 +108,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             ListTile(
               title: const Text('See Details'),
-              selected: _selectedIndex == 2,
+              selected: _selectedIndex == 3,
               onTap: () {
-                _onItemTapped(2);
+                _onItemTapped(3);
                 Navigator.pop(context);
               },
             ),

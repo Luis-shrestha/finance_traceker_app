@@ -4,10 +4,12 @@ import 'package:sales_tracker/ui/custom/customProceedButton.dart';
 import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
 
+import '../../floorDatabase/database/database.dart';
 import '../../utility/textStyle.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final AppDatabase appDatabase;
+  const LoginScreen({super.key, required this.appDatabase});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -128,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
           if (userNameController.text.isNotEmpty &&
               passwordController.text.isNotEmpty) {
             Navigator.push(
-                context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                context, MaterialPageRoute(builder: (context) => HomeScreen(appDatabase: widget.appDatabase,)));
           }
         }
       },

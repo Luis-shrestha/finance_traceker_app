@@ -4,10 +4,12 @@ import 'package:sales_tracker/ui/custom/customProceedButton.dart';
 import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
 
+import '../../floorDatabase/database/database.dart';
 import '../../utility/textStyle.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({super.key});
+  final AppDatabase appDatabase;
+  const RegisterScreen({super.key, required this.appDatabase});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -138,7 +140,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           if (userNameController.text.isNotEmpty &&
               passwordController.text.isNotEmpty) {
             Navigator.push(
-                context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                context, MaterialPageRoute(builder: (context) => HomeScreen(appDatabase: widget.appDatabase,)));
           }
         }
       },

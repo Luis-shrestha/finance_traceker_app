@@ -4,8 +4,11 @@ import 'package:sales_tracker/configs/iconsConstant.dart';
 import 'package:sales_tracker/ui/authenticationScreen/loginScreen.dart';
 import 'package:sales_tracker/ui/authenticationScreen/registerScreen.dart';
 
+import '../../floorDatabase/database/database.dart';
+
 class LoginRegisterView extends StatelessWidget {
-  const LoginRegisterView({super.key});
+  final AppDatabase appDatabase;
+  const LoginRegisterView({super.key, required this.appDatabase});
 
   @override
   Widget build(BuildContext context) {
@@ -58,10 +61,10 @@ class LoginRegisterView extends StatelessWidget {
                 ],
               ),
               Expanded(
-                child: const TabBarView(
+                child: TabBarView(
                   children: <Widget>[
-                    LoginScreen(),
-                    RegisterScreen(),
+                    LoginScreen(appDatabase: appDatabase,),
+                    RegisterScreen(appDatabase: appDatabase,),
                   ],
                 ),
               ),

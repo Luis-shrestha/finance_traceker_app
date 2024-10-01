@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sales_tracker/floorDatabase/entity/expensesEntity.dart';
 import '../../../../configs/dimension.dart';
 import '../../../../configs/palette.dart';
 import '../../../../floorDatabase/database/database.dart';
@@ -19,11 +20,16 @@ class _IncomeExpensesCardViewState extends State<IncomeExpensesCardView>
   late TabController _tabController;
 
   List<IncomeEntity> allIncome = [];
+  List<ExpensesEntity> allExpenses = [];
 
-  getAllIncome() async {
-    List<IncomeEntity> list = await widget.appDatabase.incomeDao.getAllIncome();
+  fetchIncomeAndExpenses() async {
+    List<IncomeEntity> income = await widget.appDatabase.incomeDao.getAllIncome();
     setState(() {
-      allIncome = list;
+      allIncome = income;
+    });
+    List<ExpensesEntity> expenses = await widget.appDatabase.expensesDao.getAllExpenses();
+    setState(() {
+      allExpenses = expenses;
     });
   }
 
@@ -31,7 +37,7 @@ class _IncomeExpensesCardViewState extends State<IncomeExpensesCardView>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
-    getAllIncome();
+    fetchIncomeAndExpenses();
   }
 
   @override
@@ -126,15 +132,16 @@ class _IncomeExpensesCardViewState extends State<IncomeExpensesCardView>
   Widget expensesInfo() {
     return Padding(
       padding: EdgeInsets.all(halfPadding),
-      child: Column(
-        children: [
-          CustomListCard(
-            category: "Foods and Drinks",
-            amount: '600',
-            categoryImageIcon: Image.asset("assets/icons/camera.png"),
-            mainImageIcon: Image.asset("assets/icons/camera.png"),
-          ),
-        ],
+      child: allExpenses.isEmpty
+          ? const Center(child: Text("Expenses details will be shown here"))
+          : ListView.builder(
+        itemCount: allExpenses.length,
+        itemBuilder: (BuildContext context, int index) {
+          return CustomListCard(
+            category: allExpenses[index].category!,
+            amount: allExpenses[index].amount!,
+          );
+        },
       ),
     );
   }

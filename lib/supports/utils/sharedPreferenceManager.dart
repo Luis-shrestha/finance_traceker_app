@@ -1,10 +1,32 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-class SharedPreferenceManager{
+class  SharedPreferenceManager{
   static const String isWalkthroughShown = "isWalkthroughShown";
+
+  static const String username = "token";
+  static const String password = "token";
 
   static Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
 
+  static setUsername(String name) async {
+    (await prefs).setString(username, name);
+
+  }
+
+  static Future<String?> getUsername() async {
+    return (await prefs).getString(username) ?? '';
+
+  }
+
+  static setPassword(String pass) async {
+    (await prefs).setString(password, pass);
+
+  }
+
+  static Future<String?> getPassword() async {
+    return (await prefs).getString(password) ?? '';
+
+  }
   static setWalkthroughShown(bool status) async {
     (await prefs).setBool(isWalkthroughShown, status);
   }
@@ -12,5 +34,8 @@ class SharedPreferenceManager{
   static getWalkthroughShown() async {
     return (await prefs).getBool(isWalkthroughShown) ?? false;
   }
-
+  static Future<void> clearToken() async {
+    (await prefs).remove(username);
+    (await prefs).remove(password);
+  }
 }

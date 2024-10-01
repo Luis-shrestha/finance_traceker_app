@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:sales_tracker/configs/palette.dart';
+import 'package:sales_tracker/supports/utils/sharedPreferenceManager.dart';
 import 'package:sales_tracker/ui/mainScreen/dashboard/dashboardView.dart';
+import 'package:sales_tracker/ui/mainScreen/expenses/expenseView.dart';
 import 'package:sales_tracker/ui/mainScreen/income/incomeView.dart';
 import 'package:sales_tracker/utility/textStyle.dart';
-
 import '../../floorDatabase/database/database.dart';
+import '../authenticationScreen/loginScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppDatabase appDatabase;
@@ -25,9 +27,6 @@ class _HomeScreenState extends State<HomeScreen> {
     'Details',
   ];
 
-  static const TextStyle optionStyle =
-  TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
-
   late List<Widget> _widgetOptions;
 
   @override
@@ -36,15 +35,17 @@ class _HomeScreenState extends State<HomeScreen> {
     _widgetOptions = <Widget>[
       DashboardView(appDatabase: widget.appDatabase),
       IncomeView(appDatabase: widget.appDatabase),
-      Text(
-        'Expenses',
-        style: optionStyle,
-      ),
-      Text(
-        'Details',
-        style: optionStyle,
-      ),
+      ExpenseView(appDatabase: widget.appDatabase),
+      Center(child: Text('Details', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold))),
     ];
+  }
+
+  void _logout() {
+    SharedPreferenceManager.clearToken();
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginScreen(appDatabase: widget.appDatabase)),
+    );
   }
 
   void _onItemTapped(int index) {
@@ -71,56 +72,42 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       body: _widgetOptions[_selectedIndex],
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Palette.primaryColor,
-              ),
-              child: Text(
-                'Finance Tracker App',
-                textAlign: TextAlign.center,
-                style: mediumTextStyle(textColor: Colors.white, fontSize: 20),
-              ),
+      drawer: _buildDrawer(),
+    );
+  }
+
+  Drawer _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Palette.primaryColor,
             ),
-            ListTile(
-              title: const Text('Dashboard'),
-              selected: _selectedIndex == 0,
+            child: Text(
+              'Finance Tracker App',
+              textAlign: TextAlign.center,
+              style: mediumTextStyle(textColor: Colors.white, fontSize: 20),
+            ),
+          ),
+          ...List.generate(_titles.length, (index) {
+            return ListTile(
+              title: Text(_titles[index]),
+              selected: _selectedIndex == index,
               onTap: () {
-                _onItemTapped(0);
+                _onItemTapped(index);
                 Navigator.pop(context);
               },
-            ),
-            ListTile(
-              title: const Text('Income'),
-              selected: _selectedIndex == 1,
-              onTap: () {
-                _onItemTapped(1);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Expenses'),
-              selected: _selectedIndex == 2,
-              onTap: () {
-                _onItemTapped(2);
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('See Details'),
-              selected: _selectedIndex == 3,
-              onTap: () {
-                _onItemTapped(3);
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        ),
+            );
+          }),
+          Divider(thickness: 1.5),
+          ListTile(
+            title: const Text('Logout'),
+            onTap: _logout,
+          ),
+        ],
       ),
     );
   }
 }
-

@@ -7,6 +7,7 @@ import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
 
 import '../../floorDatabase/database/database.dart';
+import '../../supports/utils/sharedPreferenceManager.dart';
 import '../../utility/textStyle.dart';
 
 class RegisterScreen extends StatefulWidget {

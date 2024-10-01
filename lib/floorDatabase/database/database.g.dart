@@ -76,6 +76,8 @@ class _$AppDatabase extends AppDatabase {
 
   RegisterDao? _registerDaoInstance;
 
+  ExpensesDao? _expensesDaoInstance;
+
   Future<sqflite.Database> open(
     String path,
     List<Migration> migrations, [
@@ -101,6 +103,8 @@ class _$AppDatabase extends AppDatabase {
             'CREATE TABLE IF NOT EXISTS `IncomeEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `category` TEXT, `date` TEXT)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `RegisterEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userName` TEXT NOT NULL, `email` TEXT NOT NULL, `contact` TEXT NOT NULL, `password` TEXT NOT NULL)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `ExpensesEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `category` TEXT, `date` TEXT)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -116,6 +120,11 @@ class _$AppDatabase extends AppDatabase {
   @override
   RegisterDao get registerDao {
     return _registerDaoInstance ??= _$RegisterDao(database, changeListener);
+  }
+
+  @override
+  ExpensesDao get expensesDao {
+    return _expensesDaoInstance ??= _$ExpensesDao(database, changeListener);
   }
 }
 
@@ -298,5 +307,92 @@ class _$RegisterDao extends RegisterDao {
   @override
   Future<void> deleteUser(RegisterEntity registerEntity) async {
     await _registerEntityDeletionAdapter.delete(registerEntity);
+  }
+}
+
+class _$ExpensesDao extends ExpensesDao {
+  _$ExpensesDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _expensesEntityInsertionAdapter = InsertionAdapter(
+            database,
+            'ExpensesEntity',
+            (ExpensesEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'amount': item.amount,
+                  'category': item.category,
+                  'date': item.date
+                }),
+        _expensesEntityUpdateAdapter = UpdateAdapter(
+            database,
+            'ExpensesEntity',
+            ['id'],
+            (ExpensesEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'amount': item.amount,
+                  'category': item.category,
+                  'date': item.date
+                }),
+        _expensesEntityDeletionAdapter = DeletionAdapter(
+            database,
+            'ExpensesEntity',
+            ['id'],
+            (ExpensesEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'amount': item.amount,
+                  'category': item.category,
+                  'date': item.date
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<ExpensesEntity> _expensesEntityInsertionAdapter;
+
+  final UpdateAdapter<ExpensesEntity> _expensesEntityUpdateAdapter;
+
+  final DeletionAdapter<ExpensesEntity> _expensesEntityDeletionAdapter;
+
+  @override
+  Future<List<ExpensesEntity>> getAllExpenses() async {
+    return _queryAdapter.queryList('SELECT * FROM ExpensesEntity',
+        mapper: (Map<String, Object?> row) => ExpensesEntity(
+            id: row['id'] as int?,
+            category: row['category'] as String?,
+            amount: row['amount'] as String?,
+            date: row['date'] as String?));
+  }
+
+  @override
+  Future<List<ExpensesEntity>> getExpensesAboveAmount(double minAmount) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM IncomeEntity WHERE amount > ?1 ORDER BY date DESC',
+        mapper: (Map<String, Object?> row) => ExpensesEntity(
+            id: row['id'] as int?,
+            category: row['category'] as String?,
+            amount: row['amount'] as String?,
+            date: row['date'] as String?),
+        arguments: [minAmount]);
+  }
+
+  @override
+  Future<void> insertExpenses(ExpensesEntity expensesEntity) async {
+    await _expensesEntityInsertionAdapter.insert(
+        expensesEntity, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> updateExpenses(ExpensesEntity expensesEntity) async {
+    await _expensesEntityUpdateAdapter.update(
+        expensesEntity, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deleteExpenses(ExpensesEntity expensesEntity) async {
+    await _expensesEntityDeletionAdapter.delete(expensesEntity);
   }
 }

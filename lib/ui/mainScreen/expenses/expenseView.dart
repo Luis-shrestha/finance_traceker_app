@@ -1,6 +1,8 @@
 import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:sales_tracker/floorDatabase/database/database.dart';
+import 'package:sales_tracker/floorDatabase/entity/expensesEntity.dart';
+import 'package:sales_tracker/ui/mainScreen/expenses/widget/addExpense.dart';
 import 'package:sales_tracker/ui/mainScreen/income/widget/addIncome.dart';
 
 import '../../../configs/palette.dart';
@@ -8,33 +10,33 @@ import '../../../floorDatabase/entity/incomeEntity.dart';
 import '../../../supports/routeTransition/routeTransition.dart';
 import '../../../utility/textStyle.dart';
 
-class IncomeView extends StatefulWidget {
+class ExpenseView extends StatefulWidget {
   final AppDatabase appDatabase;
-  const IncomeView({super.key, required this.appDatabase});
+  const ExpenseView({super.key, required this.appDatabase});
 
   @override
-  State<IncomeView> createState() => _IncomeViewState();
+  State<ExpenseView> createState() => _ExpenseViewState();
 }
 
-class _IncomeViewState extends State<IncomeView> {
+class _ExpenseViewState extends State<ExpenseView> {
 
-  List<IncomeEntity> allIncome = [];
+  List<ExpensesEntity> allExpenses = [];
 
-  getAllIncome() async{
-    List<IncomeEntity> list = await widget.appDatabase.incomeDao.getAllIncome();
+  getAllExpenses() async{
+    List<ExpensesEntity> list = await widget.appDatabase.expensesDao.getAllExpenses();
     setState(() {
-      allIncome = list;
+      allExpenses = list;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    getAllIncome();
+    getAllExpenses();
   }
 
-  void deleteIncome(IncomeEntity income) async {
-    await widget.appDatabase.incomeDao.deleteIncome(income);
+  void deleteExpenses(ExpensesEntity expenses) async {
+    await widget.appDatabase.expensesDao.deleteExpenses(expenses);
     final snackBar = SnackBar(
       elevation: 0,
       behavior: SnackBarBehavior.floating,
@@ -50,7 +52,7 @@ class _IncomeViewState extends State<IncomeView> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(snackBar);
-    getAllIncome();
+    getAllExpenses();
   }
 
   @override
@@ -58,7 +60,7 @@ class _IncomeViewState extends State<IncomeView> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(context,  customPageRouteBuilder(AddIncomeView(database: widget.appDatabase, updateIncome: getAllIncome,)));
+          Navigator.push(context,  customPageRouteBuilder(AddExpenseView(database: widget.appDatabase, updateIncome: getAllExpenses,)));
         },
         backgroundColor: Palette.backgroundColor,
         child: Icon(Icons.add,color: Colors.blue,),
@@ -66,10 +68,10 @@ class _IncomeViewState extends State<IncomeView> {
       body: SafeArea(
         child: Container(
           color: Colors.grey.shade100,
-          child: allIncome.isEmpty
+          child: allExpenses.isEmpty
               ? const Center(child: Text("Income details will be shown here"))
               : ListView.builder(
-            itemCount: allIncome.length,
+            itemCount: allExpenses.length,
             itemBuilder: (context, index) {
               return GestureDetector(
                 onLongPress: () {
@@ -93,15 +95,15 @@ class _IncomeViewState extends State<IncomeView> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AddIncomeView(
+                          builder: (context) => AddExpenseView(
                             database: widget.appDatabase,
-                            updateIncome: getAllIncome,
-                            incomeEntity: allIncome[index],
+                            updateIncome: getAllExpenses,
+                            expenseEntity: allExpenses[index],
                           ),
                         ),
                       );
                     } else if (value == 'delete') {
-                      deleteIncome(allIncome[index]);
+                      deleteExpenses(allExpenses[index]);
                     }
                   });
                 },
@@ -110,7 +112,7 @@ class _IncomeViewState extends State<IncomeView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        allIncome[index].category!,
+                        allExpenses[index].category!,
                         style: regularTextStyle(
                             textColor: Colors.black,
                             fontSize: 25,
@@ -118,8 +120,9 @@ class _IncomeViewState extends State<IncomeView> {
                             fontWeight: FontWeight.w500
                         ),
                       ),
+
                       Text(
-                        "NPR. ${allIncome[index].amount!}",
+                        "NPR. ${allExpenses[index].amount!}",
                         style: regularTextStyle(
                             textColor: Colors.black,
                             fontSize: 20,
@@ -130,7 +133,7 @@ class _IncomeViewState extends State<IncomeView> {
                     ],
                   ),
                   subtitle: Text(
-                    allIncome[index].date!,
+                    allExpenses[index].date!,
                     style: const TextStyle(
                         fontWeight: FontWeight.w900,
                         fontSize: 18.0,

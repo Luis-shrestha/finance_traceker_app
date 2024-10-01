@@ -5,6 +5,7 @@ import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
 import '../../floorDatabase/database/database.dart';
 import '../../floorDatabase/entity/registerEntity.dart';
+import '../../supports/utils/sharedPreferenceManager.dart';
 import '../../utility/applog.dart';
 import '../../utility/textStyle.dart';
 
@@ -19,8 +20,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController userNameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
-
-  var key = GlobalKey<FormState>();
+  List<RegisterEntity> userDetails = [];
+  var _formKey = GlobalKey<FormState>();
   bool _obscurePassword = false;
 
   void _togglePasswordVisibility() {
@@ -36,13 +37,16 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _fetchUserDetails() async {
+    print("Fetching user details..."); // Check if this prints
     try {
-      List<RegisterEntity> userDetails = await widget.appDatabase.registerDao.getAllUsers();
-      AppLog.d("User Details", "$userDetails");
+      userDetails = await widget.appDatabase.registerDao.getAllUsers();
+      print("User Details: ${userDetails.length}");
+      setState(() {});
     } catch (e) {
-      AppLog.e("Error fetching user details", e.toString());
+      print("Error fetching user details: ${e.toString()}"); // Log the error
     }
   }
+
 
 
   Future<bool> _validateCredentials(String username, String password) async {
@@ -107,7 +111,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget form() {
     return Form(
-      key: key,
+      key: _formKey,
       child: Column(
         children: [
           CustomTextFormField(
@@ -148,16 +152,19 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget button() {
     return GestureDetector(
       onTap: () async {
-        if (key.currentState!.validate()) {
+        if (_formKey.currentState!.validate()) {
           final isValid = await _validateCredentials(
               userNameController.text, passwordController.text);
           if (isValid) {
+            await SharedPreferenceManager.setUsername(userNameController.text);
+            await SharedPreferenceManager.setPassword(passwordController.text);
             Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (context) => HomeScreen(appDatabase: widget.appDatabase),
               ),
             );
+
           } else {
             // Show an error message if credentials are invalid
             ScaffoldMessenger.of(context).showSnackBar(

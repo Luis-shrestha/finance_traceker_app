@@ -1,38 +1,41 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sales_tracker/supports/utils/sharedPreferenceManager.dart';
 import 'package:sales_tracker/ui/authenticationScreen/login_register_tab_view.dart';
-import 'package:sales_tracker/ui/mainScreen/dashboard/dashboardView.dart';
-import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
-import 'package:sqflite/sqflite.dart';
 import 'floorDatabase/database/database.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sales_tracker/ui/authenticationScreen/loginScreen.dart';
+import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Clear old database (for debugging purposes, do not use in production)
   final appDocDir = await getApplicationDocumentsDirectory();
   final dbPath = "${appDocDir.path}/finance_tracker.db";
-
-  // Delete old database if necessary (for testing)
-  try {
-    await deleteDatabase(dbPath);
-  } catch (e) {
-    print('Error deleting database: $e');
-  }
 
   // Initialize the database
   final appDatabase = await $FloorAppDatabase.databaseBuilder(dbPath).build();
 
-  // Run the app
-  runApp(MyApp(appDatabase: appDatabase));
-}
+  // Check for existing username and password in SharedPreferences
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? storedUsername = prefs.getString(SharedPreferenceManager.username);
+  String? storedPassword = prefs.getString(SharedPreferenceManager.password);
 
+  // Ensure isLoggedIn is a boolean value
+  bool isLoggedIn = (storedUsername != null && storedUsername.isNotEmpty) &&
+      (storedPassword != null && storedPassword.isNotEmpty);
+
+  runApp(MyApp(
+    appDatabase: appDatabase,
+    isLoggedIn: isLoggedIn,
+  ));
+}
 
 class MyApp extends StatelessWidget {
   final AppDatabase appDatabase;
+  final bool isLoggedIn;
 
-  const MyApp({super.key, required this.appDatabase});
+  const MyApp({super.key, required this.appDatabase, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -43,8 +46,9 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: LoginRegisterView(appDatabase: appDatabase),
-      // home: HomeScreen(appDatabase: appDatabase),
+      home: isLoggedIn
+          ? HomeScreen(appDatabase: appDatabase)
+          : LoginRegisterView(appDatabase: appDatabase),
     );
   }
 }

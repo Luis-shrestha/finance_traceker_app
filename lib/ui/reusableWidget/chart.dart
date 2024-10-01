@@ -1,5 +1,8 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:sales_tracker/configs/palette.dart';
+
+import '../../configs/dimension.dart';
 
 class CustomBarChart extends StatelessWidget {
   const CustomBarChart();
@@ -7,10 +10,10 @@ class CustomBarChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(padding),
       width: MediaQuery.of(context).size.width,
       height: 350,
-      color: Colors.greenAccent,
+      color: Palette.primaryContainer,
       child: LineChart(
         LineChartData(
           minX: 0,

@@ -6,9 +6,15 @@ import 'package:sales_tracker/ui/authenticationScreen/registerScreen.dart';
 
 import '../../floorDatabase/database/database.dart';
 
-class LoginRegisterView extends StatelessWidget {
+class LoginRegisterView extends StatefulWidget {
   final AppDatabase appDatabase;
   const LoginRegisterView({super.key, required this.appDatabase});
+
+  @override
+  State<LoginRegisterView> createState() => _LoginRegisterViewState();
+}
+
+class _LoginRegisterViewState extends State<LoginRegisterView> {
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +69,8 @@ class LoginRegisterView extends StatelessWidget {
               Expanded(
                 child: TabBarView(
                   children: <Widget>[
-                    LoginScreen(appDatabase: appDatabase,),
-                    RegisterScreen(appDatabase: appDatabase,),
+                    LoginScreen(appDatabase: widget.appDatabase,),
+                    RegisterScreen(appDatabase: widget.appDatabase,),
                   ],
                 ),
               ),

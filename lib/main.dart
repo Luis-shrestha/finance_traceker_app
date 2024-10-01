@@ -1,70 +1,50 @@
-import 'dart:async';
-
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:sales_tracker/supports/utils/sharedPreferenceManager.dart';
-import 'package:sales_tracker/ui/authenticationScreen/loginScreen.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sales_tracker/ui/authenticationScreen/login_register_tab_view.dart';
-import 'package:sales_tracker/ui/onBoardingScreen/onBoardingScreen.dart';
-
+import 'package:sales_tracker/ui/mainScreen/dashboard/dashboardView.dart';
+import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
+import 'package:sqflite/sqflite.dart';
 import 'floorDatabase/database/database.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final appDatabase = await $FloorAppDatabase.databaseBuilder("finance_tracker.db").build();
+
+  // Clear old database (for debugging purposes, do not use in production)
+  final appDocDir = await getApplicationDocumentsDirectory();
+  final dbPath = "${appDocDir.path}/finance_tracker.db";
+
+  // Delete old database if necessary (for testing)
+  try {
+    await deleteDatabase(dbPath);
+  } catch (e) {
+    print('Error deleting database: $e');
+  }
+
+  // Initialize the database
+  final appDatabase = await $FloorAppDatabase.databaseBuilder(dbPath).build();
+
+  // Run the app
   runApp(MyApp(appDatabase: appDatabase));
 }
 
 
-
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   final AppDatabase appDatabase;
+
   const MyApp({super.key, required this.appDatabase});
-
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  /*void initState() {
-    Timer(
-      const Duration(seconds: 2),
-          () {
-        navigate();
-      },
-    );
-  }*/
-
-  // navigate() async {
-  //   bool isWalkThroughShown =
-  //   await SharedPreferenceManager.getWalkthroughShown();
-  //   Navigator.of(context).pushReplacement(
-  //     MaterialPageRoute(
-  //       builder: (BuildContext context) => isWalkThroughShown
-  //           ? const LoginScreen()
-  //           : const OnBoardingScreen(),
-  //     ),
-  //   );
-  //   /*Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => const OnBoardingView(),
-  //     ),
-  //   );*/
-  //   if (isWalkThroughShown) {
-  //   } else {}
-  // }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Finance Tracker',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: LoginRegisterView(appDatabase: widget.appDatabase),
+      home: LoginRegisterView(appDatabase: appDatabase),
+      // home: HomeScreen(appDatabase: appDatabase),
     );
   }
 }
-

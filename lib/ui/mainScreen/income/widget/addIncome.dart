@@ -1,5 +1,6 @@
 import 'dart:ffi';
 
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sales_tracker/configs/dimension.dart'; // Make sure this import is correct
@@ -208,10 +209,19 @@ class _AddIncomeViewState extends State<AddIncomeView> {
           date: dateController.text,
           category: categoryController.text,
         );
-        await widget.database.mainDao.insertIncome(income);
-        const snackBar = SnackBar(
-          content: Text('Income Data has been added.'),
-          duration: Duration(seconds: 3),
+        await widget.database.incomeDao.insertIncome(income);
+        final snackBar = SnackBar(
+          /// need to set following properties for best effect of awesome_snackbar_content
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Success',
+            message:
+            'Added Successfully',
+
+            contentType: ContentType.success,
+          ),
         );
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
@@ -225,7 +235,7 @@ class _AddIncomeViewState extends State<AddIncomeView> {
           date: dateController.text,
           category: categoryController.text,
         );
-        await widget.database.mainDao.updateIncome(income);
+        await widget.database.incomeDao.updateIncome(income);
         const snackBar = SnackBar(
           content: Text('Income data has been updated.'),
           duration: Duration(seconds: 3),

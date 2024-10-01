@@ -1,5 +1,7 @@
+import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:sales_tracker/configs/dimension.dart';
+import 'package:sales_tracker/floorDatabase/entity/registerEntity.dart';
 import 'package:sales_tracker/ui/custom/customProceedButton.dart';
 import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
@@ -64,6 +66,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
+  String? emailValidator(String? value) {
+    if (value!.isEmpty) {
+      return "Please Enter email";
+    }
+    final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+    if (!emailRegex.hasMatch(value)) {
+      return "Please enter a valid email";
+    }
+    return null;
+  }
+
   Widget form() {
     return Form(
       key: key,
@@ -86,12 +99,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           CustomTextFormField(
             line: 1,
             controller: emailController,
-            validator: (value) {
-              if (value!.isEmpty) {
-                return "Please Enter email";
-              }
-              return null;
-            },
+            validator: emailValidator,
             hintText: 'Enter your email',
             labelText: 'email',
             prefixIcon: Icons.person,
@@ -136,13 +144,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget button() {
     return GestureDetector(
       onTap: () {
-        if (key.currentState!.validate()) {
-          if (userNameController.text.isNotEmpty &&
-              passwordController.text.isNotEmpty) {
-            Navigator.push(
-                context, MaterialPageRoute(builder: (context) => HomeScreen(appDatabase: widget.appDatabase,)));
-          }
-        }
+        register();
       },
       child: CustomProceedButton(titleName: 'Login'),
     );
@@ -173,4 +175,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ],
     );
   }
+
+
+
+  void register() async {
+    if (key.currentState!.validate()) {
+      try {
+        RegisterEntity registerEntity = RegisterEntity(
+          userName: userNameController.text,
+          contact: contactController.text,
+          email: emailController.text,
+          password: passwordController.text,
+        );
+        await widget.appDatabase.registerDao.insertUser(registerEntity);
+
+        // Success feedback
+        final snackBar = SnackBar(
+          elevation: 0,
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: Colors.transparent,
+          content: AwesomeSnackbarContent(
+            title: 'Success',
+            message: 'Registered Successfully',
+            contentType: ContentType.success,
+          ),
+        );
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+        final tabController = DefaultTabController.of(context);
+        if (tabController != null) {
+          // Switch to the second tab (index 1 for Register)
+          tabController.animateTo(0);
+        }
+      } catch (e) {
+        print('Error inserting user: $e'); // Log error
+        // Handle error feedback
+        final snackBar = SnackBar(
+          content: Text('Registration failed: $e'),
+        );
+        ScaffoldMessenger.of(context)
+          ..hideCurrentSnackBar()
+          ..showSnackBar(snackBar);
+      }
+    }
+  }
+
 }

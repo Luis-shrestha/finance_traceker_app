@@ -13,3 +13,5 @@ class IncomeEntity{
 
   IncomeEntity({this.id, this.category, this.amount, this.date});
 }
+
+

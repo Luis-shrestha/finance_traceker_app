@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:sales_tracker/configs/palette.dart';
 import 'package:sales_tracker/ui/mainScreen/dashboard/dashboardView.dart';
 import 'package:sales_tracker/ui/mainScreen/income/incomeView.dart';
-import 'package:sales_tracker/ui/mainScreen/income/widget/addIncome.dart';
+import 'package:sales_tracker/utility/textStyle.dart';
 
 import '../../floorDatabase/database/database.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppDatabase appDatabase;
+
   const HomeScreen({super.key, required this.appDatabase});
 
   @override
@@ -16,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
-  // Titles for each tab
   static const List<String> _titles = [
     'Dashboard',
     'Income',
@@ -33,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _widgetOptions = <Widget>[
-      DashboardView(),
+      DashboardView(appDatabase: widget.appDatabase),
       IncomeView(appDatabase: widget.appDatabase),
       Text(
         'Expenses',
@@ -56,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_titles[_selectedIndex]), // Update title based on selected index
+        title: Text(_titles[_selectedIndex]),
         centerTitle: true,
         leading: Builder(
           builder: (context) {
@@ -69,18 +70,20 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
       ),
-      body: Center(
-        child: _widgetOptions[_selectedIndex],
-      ),
+      body: _widgetOptions[_selectedIndex],
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            const DrawerHeader(
+            DrawerHeader(
               decoration: BoxDecoration(
-                color: Colors.blue,
+                color: Palette.primaryColor,
               ),
-              child: Text('Finance Tracker App'),
+              child: Text(
+                'Finance Tracker App',
+                textAlign: TextAlign.center,
+                style: mediumTextStyle(textColor: Colors.white, fontSize: 20),
+              ),
             ),
             ListTile(
               title: const Text('Dashboard'),
@@ -120,3 +123,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+

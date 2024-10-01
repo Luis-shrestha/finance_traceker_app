@@ -72,7 +72,9 @@ class _$AppDatabase extends AppDatabase {
     changeListener = listener ?? StreamController<String>.broadcast();
   }
 
-  MainDao? _mainDaoInstance;
+  IncomeDao? _incomeDaoInstance;
+
+  RegisterDao? _registerDaoInstance;
 
   Future<sqflite.Database> open(
     String path,
@@ -97,6 +99,8 @@ class _$AppDatabase extends AppDatabase {
       onCreate: (database, version) async {
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `IncomeEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `category` TEXT, `date` TEXT)');
+        await database.execute(
+            'CREATE TABLE IF NOT EXISTS `RegisterEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userName` TEXT NOT NULL, `email` TEXT NOT NULL, `contact` TEXT NOT NULL, `password` TEXT NOT NULL)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -105,13 +109,18 @@ class _$AppDatabase extends AppDatabase {
   }
 
   @override
-  MainDao get mainDao {
-    return _mainDaoInstance ??= _$MainDao(database, changeListener);
+  IncomeDao get incomeDao {
+    return _incomeDaoInstance ??= _$IncomeDao(database, changeListener);
+  }
+
+  @override
+  RegisterDao get registerDao {
+    return _registerDaoInstance ??= _$RegisterDao(database, changeListener);
   }
 }
 
-class _$MainDao extends MainDao {
-  _$MainDao(
+class _$IncomeDao extends IncomeDao {
+  _$IncomeDao(
     this.database,
     this.changeListener,
   )   : _queryAdapter = QueryAdapter(database),
@@ -159,7 +168,7 @@ class _$MainDao extends MainDao {
 
   @override
   Future<List<IncomeEntity>> getAllIncome() async {
-    return _queryAdapter.queryList('SELECT * FROM NoteEntity',
+    return _queryAdapter.queryList('SELECT * FROM IncomeEntity',
         mapper: (Map<String, Object?> row) => IncomeEntity(
             id: row['id'] as int?,
             category: row['category'] as String?,
@@ -168,19 +177,126 @@ class _$MainDao extends MainDao {
   }
 
   @override
-  Future<void> insertIncome(IncomeEntity noteEntity) async {
+  Future<List<IncomeEntity>> getIncomeAboveAmount(double minAmount) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM IncomeEntity WHERE amount > ?1 ORDER BY date DESC',
+        mapper: (Map<String, Object?> row) => IncomeEntity(
+            id: row['id'] as int?,
+            category: row['category'] as String?,
+            amount: row['amount'] as String?,
+            date: row['date'] as String?),
+        arguments: [minAmount]);
+  }
+
+  @override
+  Future<void> insertIncome(IncomeEntity incomeEntity) async {
     await _incomeEntityInsertionAdapter.insert(
-        noteEntity, OnConflictStrategy.abort);
+        incomeEntity, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> updateIncome(IncomeEntity noteEntity) async {
+  Future<void> updateIncome(IncomeEntity incomeEntity) async {
     await _incomeEntityUpdateAdapter.update(
-        noteEntity, OnConflictStrategy.abort);
+        incomeEntity, OnConflictStrategy.abort);
   }
 
   @override
-  Future<void> deleteIncome(IncomeEntity noteEntity) async {
-    await _incomeEntityDeletionAdapter.delete(noteEntity);
+  Future<void> deleteIncome(IncomeEntity incomeEntity) async {
+    await _incomeEntityDeletionAdapter.delete(incomeEntity);
+  }
+}
+
+class _$RegisterDao extends RegisterDao {
+  _$RegisterDao(
+    this.database,
+    this.changeListener,
+  )   : _queryAdapter = QueryAdapter(database),
+        _registerEntityInsertionAdapter = InsertionAdapter(
+            database,
+            'RegisterEntity',
+            (RegisterEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'userName': item.userName,
+                  'email': item.email,
+                  'contact': item.contact,
+                  'password': item.password
+                }),
+        _registerEntityUpdateAdapter = UpdateAdapter(
+            database,
+            'RegisterEntity',
+            ['id'],
+            (RegisterEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'userName': item.userName,
+                  'email': item.email,
+                  'contact': item.contact,
+                  'password': item.password
+                }),
+        _registerEntityDeletionAdapter = DeletionAdapter(
+            database,
+            'RegisterEntity',
+            ['id'],
+            (RegisterEntity item) => <String, Object?>{
+                  'id': item.id,
+                  'userName': item.userName,
+                  'email': item.email,
+                  'contact': item.contact,
+                  'password': item.password
+                });
+
+  final sqflite.DatabaseExecutor database;
+
+  final StreamController<String> changeListener;
+
+  final QueryAdapter _queryAdapter;
+
+  final InsertionAdapter<RegisterEntity> _registerEntityInsertionAdapter;
+
+  final UpdateAdapter<RegisterEntity> _registerEntityUpdateAdapter;
+
+  final DeletionAdapter<RegisterEntity> _registerEntityDeletionAdapter;
+
+  @override
+  Future<List<RegisterEntity>> getAllUsers() async {
+    return _queryAdapter.queryList('SELECT * FROM RegisterEntity',
+        mapper: (Map<String, Object?> row) => RegisterEntity(
+            id: row['id'] as int?,
+            userName: row['userName'] as String,
+            email: row['email'] as String,
+            password: row['password'] as String,
+            contact: row['contact'] as String));
+  }
+
+  @override
+  Future<RegisterEntity?> getUserByUsernameAndPassword(
+    String username,
+    String hashedPassword,
+  ) async {
+    return _queryAdapter.query(
+        'SELECT * FROM RegisterEntity WHERE userName = ?1 AND password = ?2',
+        mapper: (Map<String, Object?> row) => RegisterEntity(
+            id: row['id'] as int?,
+            userName: row['userName'] as String,
+            email: row['email'] as String,
+            password: row['password'] as String,
+            contact: row['contact'] as String),
+        arguments: [username, hashedPassword]);
+  }
+
+  @override
+  Future<void> insertUser(RegisterEntity registerEntity) async {
+    await _registerEntityInsertionAdapter.insert(
+        registerEntity, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> updateUser(RegisterEntity registerEntity) async {
+    await _registerEntityUpdateAdapter.update(
+        registerEntity, OnConflictStrategy.abort);
+  }
+
+  @override
+  Future<void> deleteUser(RegisterEntity registerEntity) async {
+    await _registerEntityDeletionAdapter.delete(registerEntity);
   }
 }

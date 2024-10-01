@@ -3,8 +3,9 @@ import 'package:sales_tracker/configs/dimension.dart';
 import 'package:sales_tracker/ui/custom/customProceedButton.dart';
 import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
-
 import '../../floorDatabase/database/database.dart';
+import '../../floorDatabase/entity/registerEntity.dart';
+import '../../utility/applog.dart';
 import '../../utility/textStyle.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -20,13 +21,36 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController passwordController = TextEditingController();
 
   var key = GlobalKey<FormState>();
-
   bool _obscurePassword = false;
 
   void _togglePasswordVisibility() {
     setState(() {
       _obscurePassword = !_obscurePassword;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserDetails();
+  }
+
+  Future<void> _fetchUserDetails() async {
+    try {
+      List<RegisterEntity> userDetails = await widget.appDatabase.registerDao.getAllUsers();
+      AppLog.d("User Details", "$userDetails");
+    } catch (e) {
+      AppLog.e("Error fetching user details", e.toString());
+    }
+  }
+
+
+  Future<bool> _validateCredentials(String username, String password) async {
+    final user = await widget.appDatabase.registerDao.getUserByUsernameAndPassword(username, password);
+    if (user != null && user.password == password) {
+      return true;
+    }
+    return false;
   }
 
   @override
@@ -39,7 +63,6 @@ class _LoginScreenState extends State<LoginScreen> {
             padding: EdgeInsets.all(doublePadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
-              // mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 header(),
                 SizedBox(height: 32.0),
@@ -113,8 +136,7 @@ class _LoginScreenState extends State<LoginScreen> {
             hintText: 'Enter your password',
             labelText: 'password',
             prefixIcon: Icons.lock,
-            suffixIcon:
-            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+            suffixIcon: _obscurePassword ? Icons.visibility : Icons.visibility_off,
             suffixIconOnPressed: _togglePasswordVisibility,
             obscureText: _obscurePassword,
           ),
@@ -125,12 +147,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget button() {
     return GestureDetector(
-      onTap: (){
-        if(key.currentState!.validate()) {
-          if (userNameController.text.isNotEmpty &&
-              passwordController.text.isNotEmpty) {
+      onTap: () async {
+        if (key.currentState!.validate()) {
+          final isValid = await _validateCredentials(
+              userNameController.text, passwordController.text);
+          if (isValid) {
             Navigator.push(
-                context, MaterialPageRoute(builder: (context) => HomeScreen(appDatabase: widget.appDatabase,)));
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomeScreen(appDatabase: widget.appDatabase),
+              ),
+            );
+          } else {
+            // Show an error message if credentials are invalid
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Invalid username or password'),
+                backgroundColor: Colors.red,
+              ),
+            );
           }
         }
       },
@@ -138,13 +173,16 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget registerText(){
+  Widget registerText() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Don't have an account? ",style: regularTextStyle(textColor: Colors.black, fontSize: 15),),
+        Text(
+          "Don't have an account? ",
+          style: regularTextStyle(textColor: Colors.black, fontSize: 15),
+        ),
         GestureDetector(
-          onTap: (){
+          onTap: () {
             // Navigate to the Register Page
             final tabController = DefaultTabController.of(context);
             if (tabController != null) {
@@ -152,10 +190,13 @@ class _LoginScreenState extends State<LoginScreen> {
               tabController.animateTo(1);
             }
           },
-          child: Text("Register Here",
-          style: regularTextStyle(textColor: Colors.red, fontSize: 15),),
+          child: Text(
+            "Register Here",
+            style: regularTextStyle(textColor: Colors.red, fontSize: 15),
+          ),
         ),
       ],
     );
   }
 }
+

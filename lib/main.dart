@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:sales_tracker/supports/utils/sharedPreferenceManager.dart';
 import 'package:sales_tracker/ui/authenticationScreen/login_register_tab_view.dart';
+import 'package:sales_tracker/utility/applog.dart';
 import 'floorDatabase/database/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sales_tracker/ui/authenticationScreen/loginScreen.dart';
@@ -20,6 +21,8 @@ void main() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   String? storedUsername = prefs.getString(SharedPreferenceManager.username);
   String? storedPassword = prefs.getString(SharedPreferenceManager.password);
+
+  AppLog.d("user details", "$storedUsername, $storedPassword");
 
   // Ensure isLoggedIn is a boolean value
   bool isLoggedIn = (storedUsername != null && storedUsername.isNotEmpty) &&

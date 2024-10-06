@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:sales_tracker/configs/dimension.dart';
 import 'package:sales_tracker/configs/palette.dart';
 import 'package:sales_tracker/supports/utils/sharedPreferenceManager.dart';
+import 'package:sales_tracker/ui/authenticationScreen/login_register_tab_view.dart';
 import 'package:sales_tracker/ui/mainScreen/dashboard/dashboardView.dart';
 import 'package:sales_tracker/ui/mainScreen/expenses/expenseView.dart';
+import 'package:sales_tracker/ui/mainScreen/goal/goalView.dart';
 import 'package:sales_tracker/ui/mainScreen/income/incomeView.dart';
+import 'package:sales_tracker/ui/mainScreen/profile/editProfile/EditProfile.dart';
+import 'package:sales_tracker/ui/mainScreen/profile/profileView.dart';
 import 'package:sales_tracker/utility/textStyle.dart';
 import '../../floorDatabase/database/database.dart';
+import '../../utility/routeTransition.dart';
 import '../authenticationScreen/loginScreen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -24,6 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
     'Dashboard',
     'Income',
     'Expenses',
+    "Goal",
     'Details',
   ];
 
@@ -36,7 +43,10 @@ class _HomeScreenState extends State<HomeScreen> {
       DashboardView(appDatabase: widget.appDatabase),
       IncomeView(appDatabase: widget.appDatabase),
       ExpenseView(appDatabase: widget.appDatabase),
-      Center(child: Text('Details', style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold))),
+      GoalView(appDatabase: widget.appDatabase),
+      Center(
+          child: Text('Details',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold))),
     ];
   }
 
@@ -44,7 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
     SharedPreferenceManager.clearToken();
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => LoginScreen(appDatabase: widget.appDatabase)),
+      MaterialPageRoute(
+          builder: (context) => LoginRegisterView(appDatabase: widget.appDatabase)),
     );
   }
 
@@ -70,6 +81,22 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.all(halfPadding),
+            child: CircleAvatar(
+              backgroundColor: Colors.white,
+              child: IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    customPageRouteFromRight(ProfileView(appDatabase: widget.appDatabase,)),
+                  );
+                },
+                icon: Icon(Icons.person),
+              ),
+            ),
+          ),
+        ],
       ),
       body: _widgetOptions[_selectedIndex],
       drawer: _buildDrawer(),

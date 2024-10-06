@@ -155,6 +155,8 @@ class _LoginScreenState extends State<LoginScreen> {
         if (_formKey.currentState!.validate()) {
           final isValid = await _validateCredentials(
               userNameController.text, passwordController.text);
+
+          AppLog.i("username And Password", "${userNameController.text}, ${passwordController.text}");
           if (isValid) {
             await SharedPreferenceManager.setUsername(userNameController.text);
             await SharedPreferenceManager.setPassword(passwordController.text);

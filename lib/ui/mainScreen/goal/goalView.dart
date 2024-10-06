@@ -1,41 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:sales_tracker/floorDatabase/database/database.dart';
-import 'package:sales_tracker/floorDatabase/entity/expensesEntity.dart';
-import 'package:sales_tracker/ui/mainScreen/expenses/widget/addExpense.dart';
+import 'package:sales_tracker/floorDatabase/entity/goalEntity.dart';
+import 'package:sales_tracker/ui/mainScreen/goal/widget/addGoal.dart';
 import 'package:sales_tracker/utility/ToastUtils.dart';
+
 import '../../../configs/palette.dart';
 import '../../../supports/routeTransition/routeTransition.dart';
 import '../../../utility/textStyle.dart';
+import '../income/widget/addIncome.dart';
 
-class ExpenseView extends StatefulWidget {
+class GoalView extends StatefulWidget {
   final AppDatabase appDatabase;
-  const ExpenseView({super.key, required this.appDatabase});
+  const GoalView({super.key, required this.appDatabase});
 
   @override
-  State<ExpenseView> createState() => _ExpenseViewState();
+  State<GoalView> createState() => _GoalViewState();
 }
 
-class _ExpenseViewState extends State<ExpenseView> {
+class _GoalViewState extends State<GoalView> {
+  List<GoalEntity> allGoal = [];
 
-  List<ExpensesEntity> allExpenses = [];
-
-  getAllExpenses() async{
-    List<ExpensesEntity> list = await widget.appDatabase.expensesDao.getAllExpenses();
+  getAllGoal() async{
+    List<GoalEntity> list = await widget.appDatabase.goalDao.getAllGoal();
     setState(() {
-      allExpenses = list;
+      allGoal = list;
     });
   }
 
   @override
   void initState() {
     super.initState();
-    getAllExpenses();
+    getAllGoal();
   }
 
-  void deleteExpenses(ExpensesEntity expenses) async {
-    await widget.appDatabase.expensesDao.deleteExpenses(expenses);
-   Toastutils.showToast('Delete successful');
-    getAllExpenses();
+  void deleteIncome(GoalEntity goal) async {
+    await widget.appDatabase.goalDao.deleteGoal(goal);
+    Toastutils.showToast('Delete successful');
+    getAllGoal();
   }
 
   @override
@@ -43,7 +44,7 @@ class _ExpenseViewState extends State<ExpenseView> {
     return Scaffold(
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.push(context,  customPageRouteBuilder(AddExpenseView(database: widget.appDatabase, updateIncome: getAllExpenses,)));
+          Navigator.push(context,  customPageRouteBuilder(AddGoalView(database: widget.appDatabase, updateGoal: getAllGoal,)));
         },
         backgroundColor: Palette.backgroundColor,
         child: Icon(Icons.add,color: Colors.blue,),
@@ -51,10 +52,10 @@ class _ExpenseViewState extends State<ExpenseView> {
       body: SafeArea(
         child: Container(
           color: Colors.grey.shade100,
-          child: allExpenses.isEmpty
-              ? const Center(child: Text("Expenses details will be shown here"))
+          child: allGoal.isEmpty
+              ? const Center(child: Text("Goal details will be shown here"))
               : ListView.builder(
-            itemCount: allExpenses.length,
+            itemCount: allGoal.length,
             itemBuilder: (context, index) {
               return GestureDetector(
                 onLongPress: () {
@@ -78,15 +79,15 @@ class _ExpenseViewState extends State<ExpenseView> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => AddExpenseView(
+                          builder: (context) => AddGoalView(
                             database: widget.appDatabase,
-                            updateIncome: getAllExpenses,
-                            expenseEntity: allExpenses[index],
+                            updateGoal: getAllGoal,
+                            goalEntity: allGoal[index],
                           ),
                         ),
                       );
                     } else if (value == 'delete') {
-                      deleteExpenses(allExpenses[index]);
+                      deleteIncome(allGoal[index]);
                     }
                   });
                 },
@@ -95,7 +96,7 @@ class _ExpenseViewState extends State<ExpenseView> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        allExpenses[index].category!,
+                        allGoal[index].goalName!,
                         style: regularTextStyle(
                             textColor: Colors.black,
                             fontSize: 25,
@@ -105,7 +106,7 @@ class _ExpenseViewState extends State<ExpenseView> {
                       ),
 
                       Text(
-                        "NPR. ${allExpenses[index].amount!}",
+                        "NPR. ${allGoal[index].amount!}",
                         style: regularTextStyle(
                             textColor: Colors.black,
                             fontSize: 20,
@@ -115,13 +116,27 @@ class _ExpenseViewState extends State<ExpenseView> {
                       ),
                     ],
                   ),
-                  subtitle: Text(
-                    allExpenses[index].date!,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 18.0,
-                        color: Colors.green,
-                        fontFamily: 'arial'),
+                  subtitle:  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        allGoal[index].goalDescription!,
+                        style: regularTextStyle(
+                            textColor: Colors.black54,
+                            fontSize: 20,
+                            fontFamily:'arial',
+                            fontWeight: FontWeight.w500
+                        ),
+                      ),
+                      Text(
+                        "until ${allGoal[index].date!}",
+                        style: const TextStyle(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18.0,
+                            color: Colors.green,
+                            fontFamily: 'arial'),
+                      ),
+                    ],
                   ),
                 ),
               );

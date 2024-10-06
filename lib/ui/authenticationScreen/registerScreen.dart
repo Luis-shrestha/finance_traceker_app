@@ -1,13 +1,11 @@
-import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:sales_tracker/configs/dimension.dart';
 import 'package:sales_tracker/floorDatabase/entity/registerEntity.dart';
 import 'package:sales_tracker/ui/custom/customProceedButton.dart';
-import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
+import 'package:sales_tracker/utility/ToastUtils.dart';
 
 import '../../floorDatabase/database/database.dart';
-import '../../supports/utils/sharedPreferenceManager.dart';
 import '../../utility/textStyle.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -191,19 +189,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         await widget.appDatabase.registerDao.insertUser(registerEntity);
 
         // Success feedback
-        final snackBar = SnackBar(
-          elevation: 0,
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.transparent,
-          content: AwesomeSnackbarContent(
-            title: 'Success',
-            message: 'Registered Successfully',
-            contentType: ContentType.success,
-          ),
-        );
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(snackBar);
+        Toastutils.showToast('Registered Successfully');
         final tabController = DefaultTabController.of(context);
         if (tabController != null) {
           // Switch to the second tab (index 1 for Register)
@@ -212,12 +198,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       } catch (e) {
         print('Error inserting user: $e'); // Log error
         // Handle error feedback
-        final snackBar = SnackBar(
-          content: Text('Registration failed: $e'),
-        );
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(snackBar);
+        Toastutils.showToast('Registered failed');
       }
     }
   }

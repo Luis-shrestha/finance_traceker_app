@@ -1,4 +1,3 @@
-import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:sales_tracker/floorDatabase/database/database.dart';
 import 'package:sales_tracker/ui/mainScreen/income/widget/addIncome.dart';
@@ -6,6 +5,7 @@ import 'package:sales_tracker/ui/mainScreen/income/widget/addIncome.dart';
 import '../../../configs/palette.dart';
 import '../../../floorDatabase/entity/incomeEntity.dart';
 import '../../../supports/routeTransition/routeTransition.dart';
+import '../../../utility/ToastUtils.dart';
 import '../../../utility/textStyle.dart';
 
 class IncomeView extends StatefulWidget {
@@ -35,21 +35,7 @@ class _IncomeViewState extends State<IncomeView> {
 
   void deleteIncome(IncomeEntity income) async {
     await widget.appDatabase.incomeDao.deleteIncome(income);
-    final snackBar = SnackBar(
-      elevation: 0,
-      behavior: SnackBarBehavior.floating,
-      backgroundColor: Colors.transparent,
-      content: AwesomeSnackbarContent(
-        title: 'Success',
-        message:
-        'Delete successful',
-
-        contentType: ContentType.success,
-      ),
-    );
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(snackBar);
+    Toastutils.showToast( 'Delete Successfully');
     getAllIncome();
   }
 

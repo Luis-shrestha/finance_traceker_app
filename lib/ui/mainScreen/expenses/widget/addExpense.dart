@@ -1,15 +1,13 @@
-import 'dart:ffi';
 
-import 'package:awesome_snackbar_content/awesome_snackbar_content.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:sales_tracker/configs/dimension.dart'; // Make sure this import is correct
-import 'package:sales_tracker/configs/palette.dart';
+import 'package:sales_tracker/configs/dimension.dart';
 import 'package:sales_tracker/floorDatabase/database/database.dart';
 import 'package:sales_tracker/floorDatabase/entity/expensesEntity.dart';
 import 'package:sales_tracker/ui/custom/customProceedButton.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
-import 'package:sales_tracker/utility/textStyle.dart'; // Make sure this import is correct
+import 'package:sales_tracker/utility/ToastUtils.dart';
+import 'package:sales_tracker/utility/textStyle.dart';
 
 enum CategoryLabel {
   Food_and_Drinks,
@@ -55,12 +53,14 @@ class _AddExpenseViewState extends State<AddExpenseView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.expenseEntity == null ? "Add Expenses" : "Update Expenses",
+          style: LargeTextStyle(textColor: Colors.black, fontSize: 25),),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: 16,),
-            Text(widget.expenseEntity == null ? "Add Expenses" : "Update Expenses",
-              style: LargeTextStyle(textColor: Colors.black, fontSize: 25),),
             Container(
               padding: EdgeInsets.all(padding),
               width: MediaQuery
@@ -210,22 +210,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
           category: categoryController.text,
         );
         await widget.database.expensesDao.insertExpenses(expenses);
-        final snackBar = SnackBar(
-          /// need to set following properties for best effect of awesome_snackbar_content
-          elevation: 0,
-          behavior: SnackBarBehavior.floating,
-          backgroundColor: Colors.transparent,
-          content: AwesomeSnackbarContent(
-            title: 'Success',
-            message:
-            'Added Successfully',
-
-            contentType: ContentType.success,
-          ),
-        );
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(snackBar);
+        Toastutils.showToast('Added Successfully');
         Navigator.pop(context);
         widget.updateIncome();
       } else{
@@ -235,14 +220,8 @@ class _AddExpenseViewState extends State<AddExpenseView> {
           date: dateController.text,
           category: categoryController.text,
         );
-        await widget.database.expensesDao.insertExpenses(expenses);
-        const snackBar = SnackBar(
-          content: Text('Income data has been updated.'),
-          duration: Duration(seconds: 3),
-        );
-        ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(snackBar);
+        await widget.database.expensesDao.updateExpenses(expenses);
+        Toastutils.showToast("Data has been updated.");
         Navigator.pop(context);
         widget.updateIncome();
       }

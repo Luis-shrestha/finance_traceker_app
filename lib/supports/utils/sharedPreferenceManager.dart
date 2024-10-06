@@ -3,8 +3,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 class  SharedPreferenceManager{
   static const String isWalkthroughShown = "isWalkthroughShown";
 
-  static const String username = "token";
-  static const String password = "token";
+  static const String username = "username";
+  static const String password = "password";
 
   static Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
 

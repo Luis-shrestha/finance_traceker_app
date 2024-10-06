@@ -9,6 +9,10 @@ import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
 import 'package:sales_tracker/utility/ToastUtils.dart';
 import 'package:sales_tracker/utility/textStyle.dart';
 
+import '../../../../floorDatabase/entity/registerEntity.dart';
+import '../../../../supports/utils/sharedPreferenceManager.dart';
+import '../../../../utility/applog.dart';
+
 enum CategoryLabel {
   Food_and_Drinks,
   Loan_Payment,
@@ -39,6 +43,9 @@ class _AddExpenseViewState extends State<AddExpenseView> {
 
   final GlobalKey<FormState> key = GlobalKey<FormState>();
 
+  RegisterEntity? user;
+  bool isLoading = true;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -47,6 +54,26 @@ class _AddExpenseViewState extends State<AddExpenseView> {
       amountController.text = widget.expenseEntity!.amount!.toString();
       dateController.text = widget.expenseEntity!.date!.toString();
       categoryController.text = widget.expenseEntity!.category!;
+    }
+    getUserData();
+  }
+  Future<void> getUserData() async {
+    try {
+      String? username = await SharedPreferenceManager.getUsername();
+      String? password = await SharedPreferenceManager.getPassword();
+
+      AppLog.d("user details", "$username, $password");
+
+      if (username != null && password != null) {
+        user = await widget.database.registerDao.getUserByUsernameAndPassword(username, password);
+      }
+    } catch (e) {
+      print("Error loading user data: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load user data')));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -205,6 +232,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
     if (key.currentState!.validate()) {
       if (widget.expenseEntity==null){
         ExpensesEntity expenses = ExpensesEntity(
+          userId: user!.id!,
           amount: amountController.text,
           date: dateController.text,
           category: categoryController.text,
@@ -215,6 +243,7 @@ class _AddExpenseViewState extends State<AddExpenseView> {
         widget.updateIncome();
       } else{
         ExpensesEntity expenses = ExpensesEntity(
+          userId: user!.id!,
           id: widget.expenseEntity!.id,
           amount: amountController.text,
           date: dateController.text,

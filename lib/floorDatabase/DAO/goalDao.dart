@@ -18,4 +18,7 @@ abstract class GoalDao {
 
   @Query("SELECT * FROM GoalEntity WHERE amount > :minAmount ORDER BY date DESC")
   Future<List<GoalEntity>> getGoalAboveAmount(double minAmount);
+
+  @Query('SELECT * FROM GoalEntity WHERE userId = :userId')
+  Future<List<GoalEntity>> findGoalsByUserId(int userId);
 }

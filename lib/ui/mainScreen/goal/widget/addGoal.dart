@@ -9,6 +9,10 @@ import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
 import 'package:sales_tracker/utility/ToastUtils.dart';
 import 'package:sales_tracker/utility/textStyle.dart';
 
+import '../../../../floorDatabase/entity/registerEntity.dart';
+import '../../../../supports/utils/sharedPreferenceManager.dart';
+import '../../../../utility/applog.dart';
+
 class AddGoalView extends StatefulWidget {
   final AppDatabase database;
   final Function updateGoal;
@@ -33,6 +37,10 @@ class _AddGoalViewState extends State<AddGoalView> {
 
   final GlobalKey<FormState> key = GlobalKey<FormState>();
 
+  RegisterEntity? user;
+  bool isLoading = true;
+
+
   @override
   void initState() {
     // TODO: implement initState
@@ -42,6 +50,27 @@ class _AddGoalViewState extends State<AddGoalView> {
       dateController.text = widget.goalEntity!.date!;
       goalNameController.text = widget.goalEntity!.goalName!;
       goalDescriptionController.text = widget.goalEntity!.goalDescription!;
+    }
+    getUserData();
+  }
+
+  Future<void> getUserData() async {
+    try {
+      String? username = await SharedPreferenceManager.getUsername();
+      String? password = await SharedPreferenceManager.getPassword();
+
+      AppLog.d("user details", "$username, $password");
+
+      if (username != null && password != null) {
+        user = await widget.database.registerDao.getUserByUsernameAndPassword(username, password);
+      }
+    } catch (e) {
+      print("Error loading user data: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load user data')));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -143,6 +172,7 @@ class _AddGoalViewState extends State<AddGoalView> {
     if (key.currentState!.validate()) {
       if (widget.goalEntity == null) {
         GoalEntity expenses = GoalEntity(
+            userId: user!.id!,
             amount: amountController.text,
             date: dateController.text,
             goalDescription: goalDescriptionController.text,
@@ -153,6 +183,7 @@ class _AddGoalViewState extends State<AddGoalView> {
         widget.updateGoal();
       } else {
         GoalEntity expenses = GoalEntity(
+            userId: user!.id!,
             id: widget.goalEntity!.id,
             amount: amountController.text,
             date: dateController.text,

@@ -47,8 +47,6 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-
-
   Future<bool> _validateCredentials(String username, String password) async {
     final user = await widget.appDatabase.registerDao.getUserByUsernameAndPassword(username, password);
     if (user != null && user.password == password) {

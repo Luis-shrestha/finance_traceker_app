@@ -26,6 +26,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   bool _obscurePassword = false;
 
+  void reset(){
+    userNameController.clear();
+    emailController.clear();
+    contactController.clear();
+    passwordController.clear();
+  }
+
   void _togglePasswordVisibility() {
     setState(() {
       _obscurePassword = !_obscurePassword;
@@ -144,8 +151,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     return GestureDetector(
       onTap: () {
         register();
+        reset();
       },
-      child: CustomProceedButton(titleName: 'Login'),
+      child: CustomProceedButton(titleName: 'Register'),
     );
   }
 
@@ -165,6 +173,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               // Switch to the second tab (index 1 for Register)
               tabController.animateTo(0);
             }
+
           },
           child: Text(
             "login Here",

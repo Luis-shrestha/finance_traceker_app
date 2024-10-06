@@ -1,9 +1,16 @@
-
 import 'package:floor/floor.dart';
+import 'package:sales_tracker/floorDatabase/entity/registerEntity.dart';
 
-@Entity()
-class ExpensesEntity{
-
+@Entity(
+  foreignKeys: [
+    ForeignKey(
+      childColumns: ['userId'],
+      parentColumns: ['id'],
+      entity: RegisterEntity,
+    ),
+  ],
+)
+class ExpensesEntity {
   @PrimaryKey(autoGenerate: true)
   int? id;
 
@@ -11,7 +18,14 @@ class ExpensesEntity{
   String? category;
   String? date;
 
-  ExpensesEntity({this.id, this.category, this.amount, this.date});
+  @ColumnInfo(name: 'userId')
+  final int userId;
+
+  ExpensesEntity({
+    this.id,
+    this.category,
+    this.amount,
+    this.date,
+    required this.userId,
+  });
 }
-
-

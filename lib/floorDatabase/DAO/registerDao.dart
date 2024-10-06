@@ -1,7 +1,4 @@
 import 'package:floor/floor.dart';
-import 'package:crypto/crypto.dart';
-import 'dart:convert';
-import '../entity/incomeEntity.dart';
 import '../entity/registerEntity.dart';
 
 @dao
@@ -21,4 +18,5 @@ abstract class RegisterDao {
   // Method to fetch a user by username and hashed password
   @Query("SELECT * FROM RegisterEntity WHERE userName = :username AND password = :hashedPassword")
   Future<RegisterEntity?> getUserByUsernameAndPassword(String username, String hashedPassword);
+
 }

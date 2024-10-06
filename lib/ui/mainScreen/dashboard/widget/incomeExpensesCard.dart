@@ -4,6 +4,9 @@ import '../../../../configs/dimension.dart';
 import '../../../../configs/palette.dart';
 import '../../../../floorDatabase/database/database.dart';
 import '../../../../floorDatabase/entity/incomeEntity.dart';
+import '../../../../floorDatabase/entity/registerEntity.dart';
+import '../../../../supports/utils/sharedPreferenceManager.dart';
+import '../../../../utility/applog.dart';
 import '../../../reusableWidget/CustomListCard.dart';
 
 class IncomeExpensesCardView extends StatefulWidget {
@@ -22,8 +25,42 @@ class _IncomeExpensesCardViewState extends State<IncomeExpensesCardView>
   List<IncomeEntity> allIncome = [];
   List<ExpensesEntity> allExpenses = [];
 
+  RegisterEntity? user;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+    getUserData();
+  }
+
+  Future<void> getUserData() async {
+    try {
+      String? username = await SharedPreferenceManager.getUsername();
+      String? password = await SharedPreferenceManager.getPassword();
+      AppLog.d("user details", "$username, $password");
+
+      if (username != null && password != null) {
+        user = await widget.appDatabase.registerDao.getUserByUsernameAndPassword(username, password);
+        AppLog.d("user Id", "${user!.id}");
+        if (user != null) {
+          await fetchIncomeAndExpenses();
+        }
+      }
+
+    } catch (e) {
+      print("Error loading user data: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load user data')));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
   fetchIncomeAndExpenses() async {
-    List<IncomeEntity> income = await widget.appDatabase.incomeDao.getAllIncome();
+    List<IncomeEntity> income = await widget.appDatabase.incomeDao.findIncomesByUserId(user!.id!);
     setState(() {
       allIncome = income;
     });
@@ -33,12 +70,6 @@ class _IncomeExpensesCardViewState extends State<IncomeExpensesCardView>
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    _tabController = TabController(length: 2, vsync: this);
-    fetchIncomeAndExpenses();
-  }
 
   @override
   void dispose() {

@@ -19,4 +19,7 @@ abstract class IncomeDao {
   // Example of a filtered query
   @Query("SELECT * FROM IncomeEntity WHERE amount > :minAmount ORDER BY date DESC")
   Future<List<IncomeEntity>> getIncomeAboveAmount(double minAmount);
+
+  @Query('SELECT * FROM IncomeEntity WHERE userId = :userId')
+  Future<List<IncomeEntity>> findIncomesByUserId(int userId);
 }

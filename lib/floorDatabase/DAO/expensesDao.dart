@@ -18,6 +18,9 @@ abstract class ExpensesDao {
   Future<void> deleteExpenses(ExpensesEntity expensesEntity);
 
   // Example of a filtered query
-  @Query("SELECT * FROM IncomeEntity WHERE amount > :minAmount ORDER BY date DESC")
+  @Query("SELECT * FROM ExpensesEntity WHERE amount > :minAmount ORDER BY date DESC")
   Future<List<ExpensesEntity>> getExpensesAboveAmount(double minAmount);
+
+  @Query('SELECT * FROM ExpensesEntity WHERE userId = :userId')
+  Future<List<ExpensesEntity>> findExpensesByUserId(int userId);
 }

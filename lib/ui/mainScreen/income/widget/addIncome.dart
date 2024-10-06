@@ -8,6 +8,10 @@ import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
 import 'package:sales_tracker/utility/ToastUtils.dart';
 import 'package:sales_tracker/utility/textStyle.dart';
 
+import '../../../../floorDatabase/entity/registerEntity.dart';
+import '../../../../supports/utils/sharedPreferenceManager.dart';
+import '../../../../utility/applog.dart';
+
 enum CategoryLabel {
   salary,
   bonus,
@@ -38,14 +42,38 @@ class _AddIncomeViewState extends State<AddIncomeView> {
 
   final GlobalKey<FormState> key = GlobalKey<FormState>();
 
+  RegisterEntity? user;
+  bool isLoading = true;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    if(widget.incomeEntity!=null){
+    if (widget.incomeEntity != null) {
       amountController.text = widget.incomeEntity!.amount!.toString();
       dateController.text = widget.incomeEntity!.date!.toString();
       categoryController.text = widget.incomeEntity!.category!;
+    }
+    getUserData();
+  }
+
+  Future<void> getUserData() async {
+    try {
+      String? username = await SharedPreferenceManager.getUsername();
+      String? password = await SharedPreferenceManager.getPassword();
+
+      AppLog.d("user details", "$username, $password");
+
+      if (username != null && password != null) {
+        user = await widget.database.registerDao.getUserByUsernameAndPassword(username, password);
+      }
+    } catch (e) {
+      print("Error loading user data: $e");
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load user data')));
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -203,26 +231,28 @@ class _AddIncomeViewState extends State<AddIncomeView> {
 
   void save() async {
     if (key.currentState!.validate()) {
-      if (widget.incomeEntity==null){
+      if (widget.incomeEntity == null) {
         IncomeEntity income = IncomeEntity(
           amount: amountController.text,
           date: dateController.text,
           category: categoryController.text,
+          userId: user!.id!,
         );
         await widget.database.incomeDao.insertIncome(income);
 
-       Toastutils.showToast( 'Added Successfully');
+        Toastutils.showToast('Added Successfully');
         Navigator.pop(context);
         widget.updateIncome();
-      } else{
+      } else {
         IncomeEntity income = IncomeEntity(
+          userId: user!.id!,
           id: widget.incomeEntity!.id,
           amount: amountController.text,
           date: dateController.text,
           category: categoryController.text,
         );
         await widget.database.incomeDao.updateIncome(income);
-        Toastutils.showToast( 'Data Updated Successfully');
+        Toastutils.showToast('Data Updated Successfully');
         Navigator.pop(context);
         widget.updateIncome();
       }

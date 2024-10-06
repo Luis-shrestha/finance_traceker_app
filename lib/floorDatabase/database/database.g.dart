@@ -102,13 +102,13 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `IncomeEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `category` TEXT, `date` TEXT)');
+            'CREATE TABLE IF NOT EXISTS `IncomeEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `category` TEXT, `date` TEXT, `userId` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `RegisterEntity` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `RegisterEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userName` TEXT NOT NULL, `email` TEXT NOT NULL, `contact` TEXT NOT NULL, `password` TEXT NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ExpensesEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `category` TEXT, `date` TEXT)');
+            'CREATE TABLE IF NOT EXISTS `ExpensesEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `category` TEXT, `date` TEXT, `userId` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `RegisterEntity` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `GoalEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `goalName` TEXT, `date` TEXT, `goalDescription` TEXT)');
+            'CREATE TABLE IF NOT EXISTS `GoalEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `goalName` TEXT, `date` TEXT, `goalDescription` TEXT, `userId` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `RegisterEntity` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -149,7 +149,8 @@ class _$IncomeDao extends IncomeDao {
                   'id': item.id,
                   'amount': item.amount,
                   'category': item.category,
-                  'date': item.date
+                  'date': item.date,
+                  'userId': item.userId
                 }),
         _incomeEntityUpdateAdapter = UpdateAdapter(
             database,
@@ -159,7 +160,8 @@ class _$IncomeDao extends IncomeDao {
                   'id': item.id,
                   'amount': item.amount,
                   'category': item.category,
-                  'date': item.date
+                  'date': item.date,
+                  'userId': item.userId
                 }),
         _incomeEntityDeletionAdapter = DeletionAdapter(
             database,
@@ -169,7 +171,8 @@ class _$IncomeDao extends IncomeDao {
                   'id': item.id,
                   'amount': item.amount,
                   'category': item.category,
-                  'date': item.date
+                  'date': item.date,
+                  'userId': item.userId
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -191,7 +194,8 @@ class _$IncomeDao extends IncomeDao {
             id: row['id'] as int?,
             category: row['category'] as String?,
             amount: row['amount'] as String?,
-            date: row['date'] as String?));
+            date: row['date'] as String?,
+            userId: row['userId'] as int));
   }
 
   @override
@@ -202,8 +206,22 @@ class _$IncomeDao extends IncomeDao {
             id: row['id'] as int?,
             category: row['category'] as String?,
             amount: row['amount'] as String?,
-            date: row['date'] as String?),
+            date: row['date'] as String?,
+            userId: row['userId'] as int),
         arguments: [minAmount]);
+  }
+
+  @override
+  Future<List<IncomeEntity>> findIncomesByUserId(int userId) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM IncomeEntity WHERE userId = ?1',
+        mapper: (Map<String, Object?> row) => IncomeEntity(
+            id: row['id'] as int?,
+            category: row['category'] as String?,
+            amount: row['amount'] as String?,
+            date: row['date'] as String?,
+            userId: row['userId'] as int),
+        arguments: [userId]);
   }
 
   @override
@@ -331,7 +349,8 @@ class _$ExpensesDao extends ExpensesDao {
                   'id': item.id,
                   'amount': item.amount,
                   'category': item.category,
-                  'date': item.date
+                  'date': item.date,
+                  'userId': item.userId
                 }),
         _expensesEntityUpdateAdapter = UpdateAdapter(
             database,
@@ -341,7 +360,8 @@ class _$ExpensesDao extends ExpensesDao {
                   'id': item.id,
                   'amount': item.amount,
                   'category': item.category,
-                  'date': item.date
+                  'date': item.date,
+                  'userId': item.userId
                 }),
         _expensesEntityDeletionAdapter = DeletionAdapter(
             database,
@@ -351,7 +371,8 @@ class _$ExpensesDao extends ExpensesDao {
                   'id': item.id,
                   'amount': item.amount,
                   'category': item.category,
-                  'date': item.date
+                  'date': item.date,
+                  'userId': item.userId
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -373,19 +394,34 @@ class _$ExpensesDao extends ExpensesDao {
             id: row['id'] as int?,
             category: row['category'] as String?,
             amount: row['amount'] as String?,
-            date: row['date'] as String?));
+            date: row['date'] as String?,
+            userId: row['userId'] as int));
   }
 
   @override
   Future<List<ExpensesEntity>> getExpensesAboveAmount(double minAmount) async {
     return _queryAdapter.queryList(
-        'SELECT * FROM IncomeEntity WHERE amount > ?1 ORDER BY date DESC',
+        'SELECT * FROM ExpensesEntity WHERE amount > ?1 ORDER BY date DESC',
         mapper: (Map<String, Object?> row) => ExpensesEntity(
             id: row['id'] as int?,
             category: row['category'] as String?,
             amount: row['amount'] as String?,
-            date: row['date'] as String?),
+            date: row['date'] as String?,
+            userId: row['userId'] as int),
         arguments: [minAmount]);
+  }
+
+  @override
+  Future<List<ExpensesEntity>> findExpensesByUserId(int userId) async {
+    return _queryAdapter.queryList(
+        'SELECT * FROM ExpensesEntity WHERE userId = ?1',
+        mapper: (Map<String, Object?> row) => ExpensesEntity(
+            id: row['id'] as int?,
+            category: row['category'] as String?,
+            amount: row['amount'] as String?,
+            date: row['date'] as String?,
+            userId: row['userId'] as int),
+        arguments: [userId]);
   }
 
   @override
@@ -419,7 +455,8 @@ class _$GoalDao extends GoalDao {
                   'amount': item.amount,
                   'goalName': item.goalName,
                   'date': item.date,
-                  'goalDescription': item.goalDescription
+                  'goalDescription': item.goalDescription,
+                  'userId': item.userId
                 }),
         _goalEntityUpdateAdapter = UpdateAdapter(
             database,
@@ -430,7 +467,8 @@ class _$GoalDao extends GoalDao {
                   'amount': item.amount,
                   'goalName': item.goalName,
                   'date': item.date,
-                  'goalDescription': item.goalDescription
+                  'goalDescription': item.goalDescription,
+                  'userId': item.userId
                 }),
         _goalEntityDeletionAdapter = DeletionAdapter(
             database,
@@ -441,7 +479,8 @@ class _$GoalDao extends GoalDao {
                   'amount': item.amount,
                   'goalName': item.goalName,
                   'date': item.date,
-                  'goalDescription': item.goalDescription
+                  'goalDescription': item.goalDescription,
+                  'userId': item.userId
                 });
 
   final sqflite.DatabaseExecutor database;
@@ -464,7 +503,8 @@ class _$GoalDao extends GoalDao {
             goalName: row['goalName'] as String?,
             amount: row['amount'] as String?,
             date: row['date'] as String?,
-            goalDescription: row['goalDescription'] as String?));
+            goalDescription: row['goalDescription'] as String?,
+            userId: row['userId'] as int));
   }
 
   @override
@@ -476,8 +516,22 @@ class _$GoalDao extends GoalDao {
             goalName: row['goalName'] as String?,
             amount: row['amount'] as String?,
             date: row['date'] as String?,
-            goalDescription: row['goalDescription'] as String?),
+            goalDescription: row['goalDescription'] as String?,
+            userId: row['userId'] as int),
         arguments: [minAmount]);
+  }
+
+  @override
+  Future<List<GoalEntity>> findGoalsByUserId(int userId) async {
+    return _queryAdapter.queryList('SELECT * FROM GoalEntity WHERE userId = ?1',
+        mapper: (Map<String, Object?> row) => GoalEntity(
+            id: row['id'] as int?,
+            goalName: row['goalName'] as String?,
+            amount: row['amount'] as String?,
+            date: row['date'] as String?,
+            goalDescription: row['goalDescription'] as String?,
+            userId: row['userId'] as int),
+        arguments: [userId]);
   }
 
   @override

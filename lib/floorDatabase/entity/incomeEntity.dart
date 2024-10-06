@@ -1,17 +1,26 @@
-
 import 'package:floor/floor.dart';
+import 'package:sales_tracker/floorDatabase/entity/registerEntity.dart';
 
-@Entity()
-class IncomeEntity{
-
+@Entity(
+  foreignKeys: [
+    ForeignKey(
+      childColumns: ['userId'],
+      parentColumns: ['id'],
+      entity: RegisterEntity,
+    ),
+  ],
+)
+class IncomeEntity {
   @PrimaryKey(autoGenerate: true)
-  int? id;
+  final int? id;
 
-  String? amount;
-  String? category;
-  String? date;
+  final String? amount;
+  final String? category;
+  final String? date;
 
-  IncomeEntity({this.id, this.category, this.amount, this.date});
+  @ColumnInfo(name: 'userId')
+  final int userId;
+
+  IncomeEntity(
+      {this.id, this.category, this.amount, this.date, required this.userId});
 }
-
-

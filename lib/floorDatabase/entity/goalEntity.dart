@@ -12,12 +12,12 @@ import 'package:sales_tracker/floorDatabase/entity/registerEntity.dart';
 )
 class GoalEntity {
   @PrimaryKey(autoGenerate: true)
-  int? id;
+  final int? id;
 
-  String? amount;
-  String? goalName;
-  String? date;
-  String? goalDescription;
+  final double? amount;
+  final String? goalName;
+  final String? date;
+  final String? goalDescription;
 
   @ColumnInfo(name: 'userId')
   final int userId;

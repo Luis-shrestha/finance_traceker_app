@@ -7,7 +7,7 @@ import '../../configs/palette.dart';
 class CustomListCard extends StatelessWidget {
   final IconData? categoryIcon;
   final String category;
-  final String amount;
+  final double amount;
   final IconData? mainIcon;
   final Image? categoryImageIcon;
   final Image? mainImageIcon;

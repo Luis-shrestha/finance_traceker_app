@@ -19,7 +19,7 @@ class GoalWidget extends StatelessWidget {
           SizedBox(height: 8.0),
           CustomListCard(
             category: "Foods and Drinks",
-            amount: '600',
+            amount: 600.0,
             categoryImageIcon: Image.asset("assets/icons/camera.png"),
             mainImageIcon: Image.asset("assets/icons/camera.png"),
           ),

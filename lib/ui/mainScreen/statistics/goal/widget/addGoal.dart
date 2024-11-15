@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sales_tracker/configs/dimension.dart';
 import 'package:sales_tracker/floorDatabase/database/database.dart';
-import 'package:sales_tracker/floorDatabase/entity/expensesEntity.dart';
 import 'package:sales_tracker/floorDatabase/entity/goalEntity.dart';
 import 'package:sales_tracker/ui/custom/customProceedButton.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
 import 'package:sales_tracker/utility/ToastUtils.dart';
 import 'package:sales_tracker/utility/textStyle.dart';
-
-import '../../../../floorDatabase/entity/registerEntity.dart';
-import '../../../../supports/utils/sharedPreferenceManager.dart';
-import '../../../../utility/applog.dart';
+import '../../../../../floorDatabase/entity/registerEntity.dart';
+import '../../../../../supports/utils/sharedPreferenceManager.dart';
 
 class AddGoalView extends StatefulWidget {
   final AppDatabase database;
@@ -46,7 +43,7 @@ class _AddGoalViewState extends State<AddGoalView> {
     // TODO: implement initState
     super.initState();
     if (widget.goalEntity != null) {
-      amountController.text = widget.goalEntity!.amount!;
+      amountController.text = widget.goalEntity!.amount!.toString();
       dateController.text = widget.goalEntity!.date!;
       goalNameController.text = widget.goalEntity!.goalName!;
       goalDescriptionController.text = widget.goalEntity!.goalDescription!;
@@ -58,8 +55,6 @@ class _AddGoalViewState extends State<AddGoalView> {
     try {
       String? username = await SharedPreferenceManager.getUsername();
       String? password = await SharedPreferenceManager.getPassword();
-
-      AppLog.d("user details", "$username, $password");
 
       if (username != null && password != null) {
         user = await widget.database.registerDao.getUserByUsernameAndPassword(username, password);
@@ -173,7 +168,7 @@ class _AddGoalViewState extends State<AddGoalView> {
       if (widget.goalEntity == null) {
         GoalEntity expenses = GoalEntity(
             userId: user!.id!,
-            amount: amountController.text,
+            amount:double.tryParse(amountController.text),
             date: dateController.text,
             goalDescription: goalDescriptionController.text,
             goalName: goalNameController.text);
@@ -185,7 +180,7 @@ class _AddGoalViewState extends State<AddGoalView> {
         GoalEntity expenses = GoalEntity(
             userId: user!.id!,
             id: widget.goalEntity!.id,
-            amount: amountController.text,
+            amount: double.tryParse(amountController.text),
             date: dateController.text,
             goalDescription: goalDescriptionController.text,
             goalName: goalNameController.text);

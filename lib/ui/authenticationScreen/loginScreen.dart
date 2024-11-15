@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:sales_tracker/configs/dimension.dart';
 import 'package:sales_tracker/ui/custom/customProceedButton.dart';
 import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../floorDatabase/database/database.dart';
 import '../../floorDatabase/entity/registerEntity.dart';
 import '../../supports/utils/sharedPreferenceManager.dart';
@@ -11,6 +14,7 @@ import '../../utility/textStyle.dart';
 
 class LoginScreen extends StatefulWidget {
   final AppDatabase appDatabase;
+
   const LoginScreen({super.key, required this.appDatabase});
 
   @override
@@ -30,29 +34,37 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
-  @override
   void initState() {
     super.initState();
-    _fetchUserDetails();
+    _loadFingerprintSetting();
   }
 
-  Future<void> _fetchUserDetails() async {
-    print("Fetching user details..."); // Check if this prints
-    try {
-      userDetails = await widget.appDatabase.registerDao.getAllUsers();
-      print("User Details: ${userDetails.length}");
-      setState(() {});
-    } catch (e) {
-      print("Error fetching user details: ${e.toString()}"); // Log the error
-    }
+  Future<void> _loadFingerprintSetting() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isFingerprintEnable =
+          prefs.getBool(SharedPreferenceManager.isFingerprintEnroll) ?? false;
+    });
   }
 
   Future<bool> _validateCredentials(String username, String password) async {
-    final user = await widget.appDatabase.registerDao.getUserByUsernameAndPassword(username, password);
+    final user = await widget.appDatabase.registerDao
+        .getUserByUsernameAndPassword(username, password);
     if (user != null && user.password == password) {
       return true;
     }
     return false;
+  }
+
+  final LocalAuthentication auth = LocalAuthentication();
+  late bool isFingerprintEnable = false;
+
+  void fingerprintEnable() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isFingerprintEnable =
+      prefs.getBool(SharedPreferenceManager.isFingerprintEnroll)!;
+    });
   }
 
   @override
@@ -61,7 +73,10 @@ class _LoginScreenState extends State<LoginScreen> {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Container(
-            width: MediaQuery.of(context).size.width,
+            width: MediaQuery
+                .of(context)
+                .size
+                .width,
             padding: EdgeInsets.all(doublePadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -71,6 +86,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 form(),
                 SizedBox(height: 32.0),
                 button(),
+                SizedBox(height: 4.0),
+                fingerPrint(),
                 SizedBox(height: 16.0),
                 registerText(),
               ],
@@ -138,7 +155,8 @@ class _LoginScreenState extends State<LoginScreen> {
             hintText: 'Enter your password',
             labelText: 'password',
             prefixIcon: Icons.lock,
-            suffixIcon: _obscurePassword ? Icons.visibility : Icons.visibility_off,
+            suffixIcon:
+            _obscurePassword ? Icons.visibility : Icons.visibility_off,
             suffixIconOnPressed: _togglePasswordVisibility,
             obscureText: _obscurePassword,
           ),
@@ -154,17 +172,18 @@ class _LoginScreenState extends State<LoginScreen> {
           final isValid = await _validateCredentials(
               userNameController.text, passwordController.text);
 
-          AppLog.i("username And Password", "${userNameController.text}, ${passwordController.text}");
+          AppLog.i("username And Password",
+              "${userNameController.text}, ${passwordController.text}");
           if (isValid) {
             await SharedPreferenceManager.setUsername(userNameController.text);
             await SharedPreferenceManager.setPassword(passwordController.text);
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => HomeScreen(appDatabase: widget.appDatabase),
+                builder: (context) =>
+                    HomeScreen(appDatabase: widget.appDatabase),
               ),
             );
-
           } else {
             // Show an error message if credentials are invalid
             ScaffoldMessenger.of(context).showSnackBar(
@@ -178,6 +197,39 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       child: CustomProceedButton(titleName: 'Login'),
     );
+  }
+
+  Widget fingerPrint() {
+    if (isFingerprintEnable) {
+      return IconButton(
+        onPressed: () async {
+         try{
+           final bool canAuthenticateWithBiometric =
+           await auth.canCheckBiometrics;
+           if (canAuthenticateWithBiometric) {
+             final bool didAuthenticate = await auth.authenticate(
+                 localizedReason: "Please authenticate to login or use password",
+                 options: const AuthenticationOptions(
+                   biometricOnly: true,
+                 ));
+           }
+           Navigator.push(
+             context,
+             MaterialPageRoute(
+               builder: (context) =>
+                   HomeScreen(appDatabase: widget.appDatabase),
+             ),
+           );
+         }catch(e){
+           AppLog.e("Error while using fingerprint", "${e}");
+         }
+        },
+        icon: Icon(
+          Icons.fingerprint,
+        ),
+      );
+    }
+    return SizedBox.shrink();
   }
 
   Widget registerText() {
@@ -206,4 +258,3 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
-

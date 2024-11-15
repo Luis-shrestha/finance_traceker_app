@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:sales_tracker/floorDatabase/database/database.dart';
-import 'package:sales_tracker/ui/mainScreen/income/widget/addIncome.dart';
-import '../../../configs/palette.dart';
-import '../../../floorDatabase/entity/incomeEntity.dart';
-import '../../../floorDatabase/entity/registerEntity.dart';
-import '../../../supports/routeTransition/routeTransition.dart';
-import '../../../supports/utils/sharedPreferenceManager.dart';
-import '../../../utility/ToastUtils.dart';
-import '../../../utility/applog.dart';
-import '../../../utility/textStyle.dart';
+import 'package:sales_tracker/ui/mainScreen/statistics/income/widget/addIncome.dart';
+import '../../../../configs/palette.dart';
+import '../../../../floorDatabase/entity/incomeEntity.dart';
+import '../../../../floorDatabase/entity/registerEntity.dart';
+import '../../../../supports/routeTransition/routeTransition.dart';
+import '../../../../supports/utils/sharedPreferenceManager.dart';
+import '../../../../utility/ToastUtils.dart';
+import '../../../../utility/applog.dart';
+import '../../../../utility/textStyle.dart';
+import '../../../userData/userDataService.dart';
+import '../widgets/chart/chart.dart';
 
 class IncomeView extends StatefulWidget {
   final AppDatabase appDatabase;
@@ -30,26 +32,13 @@ class _IncomeViewState extends State<IncomeView> {
   }
 
   Future<void> getUserData() async {
-    try {
-      String? username = await SharedPreferenceManager.getUsername();
-      String? password = await SharedPreferenceManager.getPassword();
-      AppLog.d("user details", "$username, $password");
-
-      if (username != null && password != null) {
-        user = await widget.appDatabase.registerDao.getUserByUsernameAndPassword(username, password);
-        AppLog.d("user Id", "${user!.id}");
-        if (user != null) {
-          await getAllIncome();
-        }
-      }
-
-    } catch (e) {
-      print("Error loading user data: $e");
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to load user data')));
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
+    UserDataService userDataService = UserDataService(widget.appDatabase);
+    user = await userDataService.getUserData(context);
+    setState(() {
+      isLoading = false;
+    });
+    if (user != null) {
+      await getAllIncome();
     }
   }
 
@@ -79,7 +68,21 @@ class _IncomeViewState extends State<IncomeView> {
         child: Icon(Icons.add, color: Colors.blue),
       ),
       body: SafeArea(
-        child: Container(
+       child: Column(
+         children: [
+           IncomeChart(),
+           recentlyAddedIncome(),
+         ],
+       ),
+      ),
+    );
+  }
+
+  Widget recentlyAddedIncome(){
+    return Column(
+      children: [
+        Text("Recently Added Income", style: mediumTextStyle(textColor: Colors.black, fontSize: 18),),
+        Container(
           color: Colors.grey.shade100,
           child: isLoading
               ? Center(child: CircularProgressIndicator()) // Loading indicator
@@ -87,8 +90,11 @@ class _IncomeViewState extends State<IncomeView> {
               ? const Center(child: Text("Income details will be shown here"))
               : ListView.builder(
             itemCount: allIncome.length,
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               return IncomeListItem(
+                icon: Icons.money,
                 income: allIncome[index],
                 onEdit: () {
                   Navigator.push(
@@ -107,21 +113,23 @@ class _IncomeViewState extends State<IncomeView> {
             },
           ),
         ),
-      ),
+      ],
     );
   }
-}
+  }
 
 class IncomeListItem extends StatelessWidget {
   final IncomeEntity income;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final IconData? icon;
 
   const IncomeListItem({
     Key? key,
     required this.income,
     required this.onEdit,
     required this.onDelete,
+    this.icon,
   }) : super(key: key);
 
   @override
@@ -144,6 +152,12 @@ class IncomeListItem extends StatelessWidget {
         });
       },
       child: ListTile(
+        leading: icon != null
+            ? Icon(
+          icon,
+          color: Colors.grey,
+        )
+            : const SizedBox.shrink(),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -151,7 +165,7 @@ class IncomeListItem extends StatelessWidget {
               income.category!,
               style: regularTextStyle(
                 textColor: Colors.black,
-                fontSize: 25,
+                fontSize: 15,
                 fontFamily: 'arial',
                 fontWeight: FontWeight.w500,
               ),
@@ -160,7 +174,7 @@ class IncomeListItem extends StatelessWidget {
               "NPR. ${income.amount!}",
               style: regularTextStyle(
                 textColor: Colors.black,
-                fontSize: 20,
+                fontSize: 13,
                 fontFamily: 'arial',
                 fontWeight: FontWeight.w500,
               ),
@@ -171,7 +185,7 @@ class IncomeListItem extends StatelessWidget {
           income.date!,
           style: const TextStyle(
             fontWeight: FontWeight.w900,
-            fontSize: 18.0,
+            fontSize: 13.0,
             color: Colors.green,
             fontFamily: 'arial',
           ),

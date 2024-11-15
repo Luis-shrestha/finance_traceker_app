@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:sales_tracker/floorDatabase/database/database.dart';
 import 'package:sales_tracker/floorDatabase/entity/goalEntity.dart';
-import 'package:sales_tracker/ui/mainScreen/goal/widget/addGoal.dart';
+import 'package:sales_tracker/ui/mainScreen/statistics/goal/widget/addGoal.dart';
 import 'package:sales_tracker/utility/ToastUtils.dart';
 
-import '../../../configs/palette.dart';
-import '../../../supports/routeTransition/routeTransition.dart';
-import '../../../utility/textStyle.dart';
+import '../../../../configs/palette.dart';
+import '../../../../floorDatabase/entity/registerEntity.dart';
+import '../../../../supports/routeTransition/routeTransition.dart';
+import '../../../../utility/textStyle.dart';
+import '../../../userData/userDataService.dart';
 import '../income/widget/addIncome.dart';
 
 class GoalView extends StatefulWidget {
@@ -20,19 +22,34 @@ class GoalView extends StatefulWidget {
 class _GoalViewState extends State<GoalView> {
   List<GoalEntity> allGoal = [];
 
-  getAllGoal() async{
-    List<GoalEntity> list = await widget.appDatabase.goalDao.getAllGoal();
-    setState(() {
-      allGoal = list;
-    });
-  }
+  RegisterEntity? user;
+  bool isLoading = true;
+
+
 
   @override
   void initState() {
     super.initState();
-    getAllGoal();
+    getUserData();
   }
-
+  Future<void> getUserData() async {
+    UserDataService userDataService = UserDataService(widget.appDatabase);
+    user = await userDataService.getUserData(context);
+    setState(() {
+      isLoading = false;
+    });
+    if (user != null) {
+      await getAllGoal();
+    }
+  }
+  
+  Future<void> getAllGoal() async {
+    List<GoalEntity> list = await widget.appDatabase.goalDao.findGoalsByUserId(user!.id!);
+    setState(() {
+      allGoal = list;
+    });
+  }
+  
   void deleteIncome(GoalEntity goal) async {
     await widget.appDatabase.goalDao.deleteGoal(goal);
     Toastutils.showToast('Delete successful');

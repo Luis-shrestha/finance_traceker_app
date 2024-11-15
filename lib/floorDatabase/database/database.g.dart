@@ -102,13 +102,13 @@ class _$AppDatabase extends AppDatabase {
       },
       onCreate: (database, version) async {
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `IncomeEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `category` TEXT, `date` TEXT, `userId` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `RegisterEntity` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
+            'CREATE TABLE IF NOT EXISTS `IncomeEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` REAL, `category` TEXT, `date` TEXT, `userId` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `RegisterEntity` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
         await database.execute(
             'CREATE TABLE IF NOT EXISTS `RegisterEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `userName` TEXT NOT NULL, `email` TEXT NOT NULL, `contact` TEXT NOT NULL, `password` TEXT NOT NULL)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `ExpensesEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `category` TEXT, `date` TEXT, `userId` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `RegisterEntity` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
+            'CREATE TABLE IF NOT EXISTS `ExpensesEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` REAL, `category` TEXT, `date` TEXT, `userId` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `RegisterEntity` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
         await database.execute(
-            'CREATE TABLE IF NOT EXISTS `GoalEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` TEXT, `goalName` TEXT, `date` TEXT, `goalDescription` TEXT, `userId` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `RegisterEntity` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
+            'CREATE TABLE IF NOT EXISTS `GoalEntity` (`id` INTEGER PRIMARY KEY AUTOINCREMENT, `amount` REAL, `goalName` TEXT, `date` TEXT, `goalDescription` TEXT, `userId` INTEGER NOT NULL, FOREIGN KEY (`userId`) REFERENCES `RegisterEntity` (`id`) ON UPDATE NO ACTION ON DELETE NO ACTION)');
 
         await callback?.onCreate?.call(database, version);
       },
@@ -193,7 +193,7 @@ class _$IncomeDao extends IncomeDao {
         mapper: (Map<String, Object?> row) => IncomeEntity(
             id: row['id'] as int?,
             category: row['category'] as String?,
-            amount: row['amount'] as String?,
+            amount: row['amount'] as double?,
             date: row['date'] as String?,
             userId: row['userId'] as int));
   }
@@ -205,7 +205,7 @@ class _$IncomeDao extends IncomeDao {
         mapper: (Map<String, Object?> row) => IncomeEntity(
             id: row['id'] as int?,
             category: row['category'] as String?,
-            amount: row['amount'] as String?,
+            amount: row['amount'] as double?,
             date: row['date'] as String?,
             userId: row['userId'] as int),
         arguments: [minAmount]);
@@ -218,9 +218,30 @@ class _$IncomeDao extends IncomeDao {
         mapper: (Map<String, Object?> row) => IncomeEntity(
             id: row['id'] as int?,
             category: row['category'] as String?,
-            amount: row['amount'] as String?,
+            amount: row['amount'] as double?,
             date: row['date'] as String?,
             userId: row['userId'] as int),
+        arguments: [userId]);
+  }
+
+  @override
+  Future<List<IncomeEntity>> getAmountNyUserId(int userId) async {
+    return _queryAdapter.queryList(
+        'SELECT amount FROM IncomeEntity WHERE userId = ?1',
+        mapper: (Map<String, Object?> row) => IncomeEntity(
+            id: row['id'] as int?,
+            category: row['category'] as String?,
+            amount: row['amount'] as double?,
+            date: row['date'] as String?,
+            userId: row['userId'] as int),
+        arguments: [userId]);
+  }
+
+  @override
+  Future<double?> getTotalIncomeByUserId(int userId) async {
+    return _queryAdapter.query(
+        'SELECT COALESCE(SUM(amount), 0) FROM IncomeEntity WHERE userId = ?1',
+        mapper: (Map<String, Object?> row) => row.values.first as double,
         arguments: [userId]);
   }
 
@@ -393,7 +414,7 @@ class _$ExpensesDao extends ExpensesDao {
         mapper: (Map<String, Object?> row) => ExpensesEntity(
             id: row['id'] as int?,
             category: row['category'] as String?,
-            amount: row['amount'] as String?,
+            amount: row['amount'] as double?,
             date: row['date'] as String?,
             userId: row['userId'] as int));
   }
@@ -405,7 +426,7 @@ class _$ExpensesDao extends ExpensesDao {
         mapper: (Map<String, Object?> row) => ExpensesEntity(
             id: row['id'] as int?,
             category: row['category'] as String?,
-            amount: row['amount'] as String?,
+            amount: row['amount'] as double?,
             date: row['date'] as String?,
             userId: row['userId'] as int),
         arguments: [minAmount]);
@@ -418,9 +439,30 @@ class _$ExpensesDao extends ExpensesDao {
         mapper: (Map<String, Object?> row) => ExpensesEntity(
             id: row['id'] as int?,
             category: row['category'] as String?,
-            amount: row['amount'] as String?,
+            amount: row['amount'] as double?,
             date: row['date'] as String?,
             userId: row['userId'] as int),
+        arguments: [userId]);
+  }
+
+  @override
+  Future<List<ExpensesEntity>> getAmountNyUserId(int userId) async {
+    return _queryAdapter.queryList(
+        'SELECT amount FROM ExpensesEntity WHERE userId = ?1',
+        mapper: (Map<String, Object?> row) => ExpensesEntity(
+            id: row['id'] as int?,
+            category: row['category'] as String?,
+            amount: row['amount'] as double?,
+            date: row['date'] as String?,
+            userId: row['userId'] as int),
+        arguments: [userId]);
+  }
+
+  @override
+  Future<double?> getTotalExpensesByUserId(int userId) async {
+    return _queryAdapter.query(
+        'SELECT COALESCE(SUM(amount), 0) FROM ExpensesEntity WHERE userId = ?1',
+        mapper: (Map<String, Object?> row) => row.values.first as double,
         arguments: [userId]);
   }
 
@@ -501,7 +543,7 @@ class _$GoalDao extends GoalDao {
         mapper: (Map<String, Object?> row) => GoalEntity(
             id: row['id'] as int?,
             goalName: row['goalName'] as String?,
-            amount: row['amount'] as String?,
+            amount: row['amount'] as double?,
             date: row['date'] as String?,
             goalDescription: row['goalDescription'] as String?,
             userId: row['userId'] as int));
@@ -514,7 +556,7 @@ class _$GoalDao extends GoalDao {
         mapper: (Map<String, Object?> row) => GoalEntity(
             id: row['id'] as int?,
             goalName: row['goalName'] as String?,
-            amount: row['amount'] as String?,
+            amount: row['amount'] as double?,
             date: row['date'] as String?,
             goalDescription: row['goalDescription'] as String?,
             userId: row['userId'] as int),
@@ -527,7 +569,7 @@ class _$GoalDao extends GoalDao {
         mapper: (Map<String, Object?> row) => GoalEntity(
             id: row['id'] as int?,
             goalName: row['goalName'] as String?,
-            amount: row['amount'] as String?,
+            amount: row['amount'] as double?,
             date: row['date'] as String?,
             goalDescription: row['goalDescription'] as String?,
             userId: row['userId'] as int),

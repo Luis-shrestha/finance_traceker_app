@@ -1,42 +1,40 @@
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sales_tracker/configs/dimension.dart';
 import 'package:sales_tracker/floorDatabase/database/database.dart';
-import 'package:sales_tracker/floorDatabase/entity/expensesEntity.dart';
+import 'package:sales_tracker/floorDatabase/entity/incomeEntity.dart';
 import 'package:sales_tracker/ui/custom/customProceedButton.dart';
 import 'package:sales_tracker/ui/reusableWidget/customTextFormField.dart';
 import 'package:sales_tracker/utility/ToastUtils.dart';
 import 'package:sales_tracker/utility/textStyle.dart';
 
-import '../../../../floorDatabase/entity/registerEntity.dart';
-import '../../../../supports/utils/sharedPreferenceManager.dart';
-import '../../../../utility/applog.dart';
+import '../../../../../floorDatabase/entity/registerEntity.dart';
+import '../../../../../supports/utils/sharedPreferenceManager.dart';
 
 enum CategoryLabel {
-  Food_and_Drinks,
-  Loan_Payment,
-  Daily_Expenses,
+  salary,
+  bonus,
+  commission,
   // Add other categories as needed
 }
 
-class AddExpenseView extends StatefulWidget {
+class AddIncomeView extends StatefulWidget {
   final AppDatabase database;
   final Function updateIncome;
-  final ExpensesEntity? expenseEntity;
+  final IncomeEntity? incomeEntity;
 
-  const AddExpenseView({
+  const AddIncomeView({
     super.key,
     required this.database,
     required this.updateIncome,
-    this.expenseEntity,
+    this.incomeEntity,
   });
 
   @override
-  State<AddExpenseView> createState() => _AddExpenseViewState();
+  State<AddIncomeView> createState() => _AddIncomeViewState();
 }
 
-class _AddExpenseViewState extends State<AddExpenseView> {
+class _AddIncomeViewState extends State<AddIncomeView> {
   TextEditingController amountController = TextEditingController();
   TextEditingController dateController = TextEditingController();
   TextEditingController categoryController = TextEditingController();
@@ -50,19 +48,18 @@ class _AddExpenseViewState extends State<AddExpenseView> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    if(widget.expenseEntity!=null){
-      amountController.text = widget.expenseEntity!.amount!.toString();
-      dateController.text = widget.expenseEntity!.date!.toString();
-      categoryController.text = widget.expenseEntity!.category!;
+    if (widget.incomeEntity != null) {
+      amountController.text = widget.incomeEntity!.amount!.toString();
+      dateController.text = widget.incomeEntity!.date!.toString();
+      categoryController.text = widget.incomeEntity!.category!;
     }
     getUserData();
   }
+
   Future<void> getUserData() async {
     try {
       String? username = await SharedPreferenceManager.getUsername();
       String? password = await SharedPreferenceManager.getPassword();
-
-      AppLog.d("user details", "$username, $password");
 
       if (username != null && password != null) {
         user = await widget.database.registerDao.getUserByUsernameAndPassword(username, password);
@@ -81,13 +78,14 @@ class _AddExpenseViewState extends State<AddExpenseView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.expenseEntity == null ? "Add Expenses" : "Update Expenses",
+        title: Text(widget.incomeEntity == null ? "Add Note" : "Update Note",
           style: LargeTextStyle(textColor: Colors.black, fontSize: 25),),
         centerTitle: true,
       ),
       body: SafeArea(
         child: Column(
           children: [
+
             Container(
               padding: EdgeInsets.all(padding),
               width: MediaQuery
@@ -166,16 +164,16 @@ class _AddExpenseViewState extends State<AddExpenseView> {
                           dropdownMenuEntries: <DropdownMenuEntry<
                               CategoryLabel>>[
                             DropdownMenuEntry(
-                              value: CategoryLabel.Food_and_Drinks,
-                              label: 'Food_and_Drinks',
+                              value: CategoryLabel.salary,
+                              label: 'Salary',
                             ),
                             DropdownMenuEntry(
-                              value: CategoryLabel.Loan_Payment,
-                              label: 'Loan_Payment',
+                              value: CategoryLabel.bonus,
+                              label: 'Bonus',
                             ),
                             DropdownMenuEntry(
-                              value: CategoryLabel.Daily_Expenses,
-                              label: 'Daily_Expenses',
+                              value: CategoryLabel.commission,
+                              label: 'Commission',
                             ),
                             // Add more entries as needed
                           ],
@@ -230,27 +228,28 @@ class _AddExpenseViewState extends State<AddExpenseView> {
 
   void save() async {
     if (key.currentState!.validate()) {
-      if (widget.expenseEntity==null){
-        ExpensesEntity expenses = ExpensesEntity(
-          userId: user!.id!,
-          amount: amountController.text,
+      if (widget.incomeEntity == null) {
+        IncomeEntity income = IncomeEntity(
+          amount: double.tryParse(amountController.text),
           date: dateController.text,
           category: categoryController.text,
+          userId: user!.id!,
         );
-        await widget.database.expensesDao.insertExpenses(expenses);
+        await widget.database.incomeDao.insertIncome(income);
+
         Toastutils.showToast('Added Successfully');
         Navigator.pop(context);
         widget.updateIncome();
-      } else{
-        ExpensesEntity expenses = ExpensesEntity(
+      } else {
+        IncomeEntity income = IncomeEntity(
           userId: user!.id!,
-          id: widget.expenseEntity!.id,
-          amount: amountController.text,
+          id: widget.incomeEntity!.id,
+          amount: double.tryParse(amountController.text),
           date: dateController.text,
           category: categoryController.text,
         );
-        await widget.database.expensesDao.updateExpenses(expenses);
-        Toastutils.showToast("Data has been updated.");
+        await widget.database.incomeDao.updateIncome(income);
+        Toastutils.showToast('Data Updated Successfully');
         Navigator.pop(context);
         widget.updateIncome();
       }

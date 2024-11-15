@@ -1,7 +1,5 @@
 import 'package:floor/floor.dart';
 import 'package:sales_tracker/floorDatabase/entity/expensesEntity.dart';
-import '../entity/incomeEntity.dart';
-import '../entity/registerEntity.dart';
 
 @dao
 abstract class ExpensesDao {
@@ -23,4 +21,10 @@ abstract class ExpensesDao {
 
   @Query('SELECT * FROM ExpensesEntity WHERE userId = :userId')
   Future<List<ExpensesEntity>> findExpensesByUserId(int userId);
+
+  @Query('SELECT amount FROM ExpensesEntity WHERE userId = :userId')
+  Future<List<ExpensesEntity>> getAmountNyUserId(int userId);
+
+  @Query('SELECT COALESCE(SUM(amount), 0) FROM ExpensesEntity WHERE userId = :userId')
+  Future<double?> getTotalExpensesByUserId(int userId);
 }

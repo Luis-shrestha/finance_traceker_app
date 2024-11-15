@@ -4,15 +4,12 @@ import 'package:sales_tracker/configs/palette.dart';
 import 'package:sales_tracker/supports/utils/sharedPreferenceManager.dart';
 import 'package:sales_tracker/ui/authenticationScreen/login_register_tab_view.dart';
 import 'package:sales_tracker/ui/mainScreen/dashboard/dashboardView.dart';
-import 'package:sales_tracker/ui/mainScreen/expenses/expenseView.dart';
-import 'package:sales_tracker/ui/mainScreen/goal/goalView.dart';
-import 'package:sales_tracker/ui/mainScreen/income/incomeView.dart';
-import 'package:sales_tracker/ui/mainScreen/profile/editProfile/EditProfile.dart';
 import 'package:sales_tracker/ui/mainScreen/profile/profileView.dart';
+import 'package:sales_tracker/ui/mainScreen/setting/settings.dart';
+import 'package:sales_tracker/ui/mainScreen/statistics/StatisticsScreen.dart';
 import 'package:sales_tracker/utility/textStyle.dart';
 import '../../floorDatabase/database/database.dart';
 import '../../utility/routeTransition.dart';
-import '../authenticationScreen/loginScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   final AppDatabase appDatabase;
@@ -28,10 +25,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const List<String> _titles = [
     'Dashboard',
-    'Income',
-    'Expenses',
-    "Goal",
+    'Statistics',
     'Details',
+    'Setting',
   ];
 
   late List<Widget> _widgetOptions;
@@ -41,12 +37,11 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _widgetOptions = <Widget>[
       DashboardView(appDatabase: widget.appDatabase),
-      IncomeView(appDatabase: widget.appDatabase),
-      ExpenseView(appDatabase: widget.appDatabase),
-      GoalView(appDatabase: widget.appDatabase),
+      StatisticsScreen(appDatabase: widget.appDatabase),
       Center(
           child: Text('Details',
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold))),
+      Settings(appDatabase: widget.appDatabase),
     ];
   }
 

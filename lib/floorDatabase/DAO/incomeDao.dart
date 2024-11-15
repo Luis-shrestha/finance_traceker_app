@@ -22,4 +22,11 @@ abstract class IncomeDao {
 
   @Query('SELECT * FROM IncomeEntity WHERE userId = :userId')
   Future<List<IncomeEntity>> findIncomesByUserId(int userId);
+
+  @Query('SELECT amount FROM IncomeEntity WHERE userId = :userId')
+  Future<List<IncomeEntity>> getAmountNyUserId(int userId);
+
+  @Query('SELECT COALESCE(SUM(amount), 0) FROM IncomeEntity WHERE userId = :userId')
+  Future<double?> getTotalIncomeByUserId(int userId);
+
 }

@@ -17,6 +17,13 @@ class LoginRegisterView extends StatefulWidget {
 class _LoginRegisterViewState extends State<LoginRegisterView> {
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    widget.appDatabase.registerDao.getAllUsers();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return DefaultTabController(
       initialIndex: 0,

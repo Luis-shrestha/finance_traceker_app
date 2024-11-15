@@ -1,19 +1,24 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sales_tracker/firebaseApis/firebaseApi.dart';
 import 'package:sales_tracker/supports/utils/sharedPreferenceManager.dart';
 import 'package:sales_tracker/ui/authenticationScreen/login_register_tab_view.dart';
 import 'package:sales_tracker/utility/applog.dart';
 import 'floorDatabase/database/database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sales_tracker/ui/authenticationScreen/loginScreen.dart';
 import 'package:sales_tracker/ui/mainScreen/homeScreen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+import 'notificationPage/notificationPage.dart';
 
+final navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); 
+  await Firebase.initializeApp();
+  await FirebaseApi().initNotifications();
   final appDocDir = await getApplicationDocumentsDirectory();
   final dbPath = "${appDocDir.path}/finance_tracker.db";
-
   // Initialize the database
   final appDatabase = await $FloorAppDatabase.databaseBuilder(dbPath).build();
 
@@ -49,6 +54,10 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
+      navigatorKey: navigatorKey,
+      routes: {
+        '/notificationPage': (context) => NotificationPage(),
+      },
       home: isLoggedIn
           ? HomeScreen(appDatabase: appDatabase)
           : LoginRegisterView(appDatabase: appDatabase),

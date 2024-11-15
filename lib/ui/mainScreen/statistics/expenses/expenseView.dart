@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:sales_tracker/floorDatabase/database/database.dart';
 import 'package:sales_tracker/floorDatabase/entity/expensesEntity.dart';
-import 'package:sales_tracker/ui/mainScreen/expenses/widget/addExpense.dart';
-import 'package:sales_tracker/utility/ToastUtils.dart';
-import '../../../configs/palette.dart';
-import '../../../supports/routeTransition/routeTransition.dart';
-import '../../../utility/textStyle.dart';
+import 'package:sales_tracker/ui/mainScreen/statistics/expenses/widget/addExpense.dart';
+
+import '../../../../configs/palette.dart';
+import '../../../../floorDatabase/entity/registerEntity.dart';
+import '../../../../supports/routeTransition/routeTransition.dart';
+import '../../../../utility/ToastUtils.dart';
+import '../../../../utility/textStyle.dart';
+import '../../../userData/userDataService.dart';
 
 class ExpenseView extends StatefulWidget {
   final AppDatabase appDatabase;
@@ -19,17 +22,31 @@ class _ExpenseViewState extends State<ExpenseView> {
 
   List<ExpensesEntity> allExpenses = [];
 
-  getAllExpenses() async{
-    List<ExpensesEntity> list = await widget.appDatabase.expensesDao.getAllExpenses();
-    setState(() {
-      allExpenses = list;
-    });
-  }
+  RegisterEntity? user;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    getAllExpenses();
+    getUserData();
+  }
+  
+  Future<void> getUserData() async {
+    UserDataService userDataService = UserDataService(widget.appDatabase);
+    user = await userDataService.getUserData(context);
+    setState(() {
+      isLoading = false;
+    });
+    if (user != null) {
+      await getAllExpenses();
+    }
+  }
+
+  getAllExpenses() async{
+    List<ExpensesEntity> list = await widget.appDatabase.expensesDao.findExpensesByUserId(user!.id!);
+    setState(() {
+      allExpenses = list;
+    });
   }
 
   void deleteExpenses(ExpensesEntity expenses) async {

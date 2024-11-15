@@ -14,7 +14,7 @@ class IncomeEntity {
   @PrimaryKey(autoGenerate: true)
   final int? id;
 
-  final String? amount;
+  final double? amount;
   final String? category;
   final String? date;
 

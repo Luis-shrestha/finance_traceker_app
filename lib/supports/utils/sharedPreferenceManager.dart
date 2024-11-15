@@ -5,6 +5,7 @@ class  SharedPreferenceManager{
 
   static const String username = "username";
   static const String password = "password";
+  static const String isFingerprintEnroll = "isFingerprintEnroll";
 
   static Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
 
@@ -27,6 +28,15 @@ class  SharedPreferenceManager{
     return (await prefs).getString(password) ?? '';
 
   }
+
+  static setFingerPrintFirstView(bool status) async {
+    (await prefs).setBool(isFingerprintEnroll, status);
+  }
+
+  static getFingerPrintFirstView() async {
+    return (await prefs).getBool(isFingerprintEnroll) ?? false;
+  }
+
   static setWalkthroughShown(bool status) async {
     (await prefs).setBool(isWalkthroughShown, status);
   }
